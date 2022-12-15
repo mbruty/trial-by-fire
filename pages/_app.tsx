@@ -1,31 +1,14 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ChakraProvider } from '@chakra-ui/react'
-import { useEffect } from 'react'
-import { io } from 'socket.io-client'
+import { useEffect, useState } from 'react'
+import { SocketObservable, WebsocketContext } from '../contexts/websocketContext';
+
 export default function App({ Component, pageProps }: AppProps) {
+
   useEffect(() => {
-    fetch('/api/ws/socket-io').finally(() => {
-      const socket = io()
-
-      socket.on('connect', () => {
-        console.log('connect')
-        socket.emit('hello')
-      })
-
-      socket.on('hello', data => {
-        console.log('hello', data)
-      })
-
-      socket.on('a user connected', () => {
-        console.log('a user connected')
-      })
-
-      socket.on('disconnect', () => {
-        console.log('disconnect')
-      })
-    })
+    fetch('/api/ws/socket-io');
   }, []);
-  
-  return <ChakraProvider><Component {...pageProps} /></ChakraProvider>
+
+  return <ChakraProvider><WebsocketContext.Provider value={new SocketObservable()}><Component {...pageProps} /></WebsocketContext.Provider></ChakraProvider>
 }

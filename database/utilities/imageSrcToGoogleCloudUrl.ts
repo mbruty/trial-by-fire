@@ -1,0 +1,1 @@
+export default (url: string) => `https://storage.googleapis.com/trial-by-fire/${url}`;

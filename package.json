@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/icons": "^2.0.13",
     "@chakra-ui/react": "^2.4.3",
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
@@ -19,6 +20,7 @@
     "@types/socket.io": "^3.0.2",
     "@types/uuid": "^9.0.0",
     "axios": "^1.2.1",
+    "cookies-next": "^2.1.1",
     "eslint": "8.29.0",
     "eslint-config-next": "13.0.6",
     "framer-motion": "^6",
@@ -28,6 +30,7 @@
     "next-connect": "^0.13.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-reorder": "^3.0.0-alpha.7",
     "react-webcam": "^7.0.1",
     "sass": "^1.56.1",
     "sharp": "^0.31.2",

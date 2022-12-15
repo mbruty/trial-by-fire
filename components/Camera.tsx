@@ -9,13 +9,14 @@ type VideoConstraints = {
 }
 
 type CameraProps = {
+    imgSrc: string;
     onSubmit: (data: string) => void;
     onReset: () => void;
     isSaved: boolean;
 }
 
 const Camera: React.FC<CameraProps> = (props) => {
-    const [picture, setPicture] = useState('')
+    const [picture, setPicture] = useState(props.imgSrc)
     const webcamRef = React.useRef(null)
     const [videoConstraints, setVideoConstraints] = React.useState<VideoConstraints | null>(null);
     const capture = React.useCallback(() => {
@@ -39,7 +40,7 @@ const Camera: React.FC<CameraProps> = (props) => {
         };
 
         setVideoConstraints(videoConstraints);
-    }, [window.innerWidth]);
+    }, []);
 
     if (!videoConstraints) {
         return null;

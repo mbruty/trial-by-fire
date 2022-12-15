@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next'
 import Game, { GameUser } from '../../../database/models/game';
+import { setCookie } from 'cookies-next';
+
+
 
 export async function createAnonymousUser(body: JoinRoomBody): Promise<JoinRoomResponse> {
     const id = new mongoose.Types.ObjectId();
@@ -9,14 +12,15 @@ export async function createAnonymousUser(body: JoinRoomBody): Promise<JoinRoomR
     const gameUser: GameUser = {
         _id: id,
         name: body.name,
-        beanBalance: room.startingBalance
+        beanBalance: room.startingBalance,
+        isRemote: body.isRemote
     };
 
     room.players.push(gameUser);
 
     await room.save();
 
-    return { ID: id.toString() }
+    return { ID: id.toString(), roomID: room._id.toString() }
 }
 
 export default async function handler(
@@ -26,6 +30,8 @@ export default async function handler(
     if (req.method == 'POST') {
         try {
             const response = await createAnonymousUser(req.body);
+            setCookie('id', response.ID, { req, res });
+            setCookie('room-id', response.roomID, { req, res });
             res.json(response);
             res.status(200);
         } catch (e: any) {

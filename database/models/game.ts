@@ -1,30 +1,41 @@
 import mongoose, { Schema, model, Types } from "mongoose";
 
 export type GameUser = {
-    _id: Types.ObjectId;
+    _id: Types.ObjectId | string;
     name: string;
     imageURL?: string;
     beanBalance: number;
+    isRemote: boolean;
 }
 
-export type GameRound = {
-
+export type Trial = {
+    title: string;
+    type: string;
+    timeLimit: number;
 }
 
 export type IGame = {
-    code: String;
+    code: string;
+    state: string;
     startingBalance: number;
     players: Array<GameUser>;
+    rounds: Array<Trial>;
 }
 
 const gameSchema = new Schema({
     code: { type: String, required: true },
     startingBalance: { type: Number, required: true },
+    state: { type: String, required: true, default: 'waiting' },
     players: [{
-        _id: { type: Types.ObjectId, required: true },
         name: { type: String, required: true },
         imageURL: { type: String, required: false },
         beanBalance: { type: Number, required: true },
+        isRemote: { type: Boolean, required: true }
+    }],
+    rounds: [{
+        title: { type: String, required: true },
+        type: { type: String, required: true },
+        timeLimit: { type: Number, required: true }
     }]
 })
 

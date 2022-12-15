@@ -1,23 +1,22 @@
 import { Server } from 'socket.io'
 import mongoConnection from '../../../database/mongoConnection';
 import joinRoom from '../../../sockets/joinRoom';
+import startGame from '../../../sockets/startGame';
 
 // Plug the socket io instance into the server instance
 const ioHandler = async (req: NextApiRequest, res: NextApiResponse) => {
     // Typescript thinks that socket doesn't have a server attribute when it does
     // @ts-ignore
-    if (!res.socket.server.io) {
+    if (!global.io) {
         console.log('*First use, starting socket.io')
         // @ts-ignore
-        const io = new Server(res.socket.server)
+        const io = new Server<ClientToServerEvents, ServerToClientEvents>(res.socket.server)
         setupSocketHandlers(io);
         // @ts-ignore
-        res.socket.server.io = io
+        global.io = io;
         // @ts-ignore
-    } else if(!res.socket.server.db) {
+    } else if (!global.db) {
         await mongoConnection();
-        // @ts-ignore
-        res.socket.server.db = true;
     } else {
         console.log('socket.io already running')
     }
@@ -29,6 +28,7 @@ const ioHandler = async (req: NextApiRequest, res: NextApiResponse) => {
 function setupSocketHandlers(io: Server) {
     io.on('connection', (socket) => {
         socket.on('join', (message: string) => joinRoom(message, socket));
+        socket.on('start', (message: string) => startGame(message, socket));
     });
 }
 

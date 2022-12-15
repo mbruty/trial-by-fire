@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Game from '../../../database/models/game';
 import mongoose from 'mongoose';
 import getPlayerImage from '../../../database/utilities/getPlayerImage';
+import getServerSocket from '../../../sockets/getServerSocket';
 
 const gc = new Storage({
     keyFilename: path.join(__dirname, '../../../../../gcp-storage-key.json'),
@@ -19,6 +20,7 @@ export async function postImage(body: ImageUploadBody) {
     if (imageURL) {
         imgBucket.file(imageURL).delete();
     }
+
     const imageBuf = Buffer.from(body.imageBase64.replace(/^data:image\/jpeg;base64,/, ''), 'base64');
     const fileName = `${uuidv4()}.jpg`;
     await new Promise((resolve, reject) => {
@@ -32,18 +34,19 @@ export async function postImage(body: ImageUploadBody) {
             });
     })
 
-    try {
-        await Game.findOneAndUpdate(
-            {
-                code: body.gameCode,
-                "players._id": new mongoose.Types.ObjectId(body.userId)
-            },
-            { $set: { "players.$.imageURL": fileName } },
-        );
-    } catch (error) {
-        console.log(error);
-    }
+    const updated = await Game.findOneAndUpdate(
+        {
+            code: body.gameCode,
+            "players._id": new mongoose.Types.ObjectId(body.userId)
+        },
+        { $set: { "players.$.imageURL": fileName } },
+        { new: true }
+    );
 
+    if (!updated) return;
+    const io = getServerSocket();
+
+    io.to(updated.code).emit('userUpdate', JSON.stringify(updated.players));
 }
 
 export default async function handler(
@@ -51,7 +54,7 @@ export default async function handler(
     res: NextApiResponse
 ) {
     if (req.method == 'POST') {
-        const id = await postImage(req.body).catch(e => res.status(400));
+        const id = await postImage(req.body).catch(e => { console.log(e); res.status(400) });
         res.status(200);
         return res.end();
     }
