@@ -1,20 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
-import Game, { GameUser, IGame } from '../../database/models/game';
-import { Button, Card, CardHeader, Center, Flex, Grid, Heading, Image, StackDivider, Text, VStack } from '@chakra-ui/react';
-import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
+import Game, { GameUser, IGame } from '../../../database/models/game';
+import { Button, Card, CardHeader, Center, Heading, Image, StackDivider, Text, VStack } from '@chakra-ui/react';
+import imageSrcToGoogleCloudUrl from '../../../database/utilities/imageSrcToGoogleCloudUrl';
 import styles from './[id].module.scss';
-import useSocket from '../../hooks/useSocket';
-import mongoConnection from '../../database/mongoConnection';
+import useSocket from '../../../hooks/useSocket';
+import mongoConnection from '../../../database/mongoConnection';
+import { useRouter } from 'next/router';
 type Props = {
     id: string;
     game: IGame
 }
 
 const GamePage: React.FC<Props> = (props: Props, context: any) => {
-    const socketContext = useSocket();
     const [gameData, setGameData] = useState<IGame>(props.game);
+    const socketContext = useSocket();
+    const router = useRouter();
 
     function onUserUpdate(data: Array<GameUser>) {
         setGameData({ ...gameData, players: data });
@@ -22,7 +24,9 @@ const GamePage: React.FC<Props> = (props: Props, context: any) => {
 
     useEffect(() => {
         const onUserUpdateId = socketContext.subscribeToOnUserUpdate(onUserUpdate);
-
+        const onStartId = socketContext.subscribeToStart(() => {
+            router.push(`/host/play/${props.id}`);
+        });
         socketContext.joinRoom(props.game.code);
         // On unmount, unsubscribe from the events
         return () => {

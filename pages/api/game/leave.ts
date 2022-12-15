@@ -1,4 +1,5 @@
 import { Storage } from '@google-cloud/storage';
+import { deleteCookie } from 'cookies-next';
 import mongoose from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path';
@@ -13,7 +14,7 @@ const gc = new Storage({
 
 const imgBucket = gc.bucket('trial-by-fire');
 
-export async function createAnonymousUser(body: LeaveRoomBody) {
+export async function leaveRoom(body: LeaveRoomBody) {
     // Get the players image url and delete
     const imageURL = await getPlayerImage(body.gameCode, body.id);
     if (imageURL) {
@@ -35,7 +36,9 @@ export default async function handler(
 ) {
     if (req.method == 'POST') {
         try {
-            const response = await createAnonymousUser(req.body);
+            await leaveRoom(req.body);
+            deleteCookie('id', { req, res });
+            deleteCookie('room-id', { req, res });
             res.status(200);
         } catch (e: any) {
             res.status(400);

@@ -11,18 +11,14 @@ type OnUbpdateObject<T> = {
     onUpdate: OnUpdate<T>;
 }
 
-type events = {
-    userUpdate: boolean;
-    start: boolean;
-}
-
 type SocketWithEvents = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 export class SocketObservable {
     private socket: SocketWithEvents | undefined;
-    private eventsSubscribedTo: events = {
+    private eventsSubscribedTo = {
         userUpdate: false,
-        start: false
+        start: false,
+        state: false
     };
 
     private onUserUpdateSubscribers: Array<OnUbpdateObject<Array<GameUser>>> = [];
@@ -42,6 +38,7 @@ export class SocketObservable {
         // By default socketio calls the functions with a Socket scope
         this.onUserUpdate = this.onUserUpdate.bind(this);
         this.onStart = this.onStart.bind(this);
+        this.onState = this.onState.bind(this);
     }
 
     // #region Client to server events
@@ -65,7 +62,7 @@ export class SocketObservable {
         this.onStartSubscribers.forEach(x => x.onUpdate(data));
     }
 
-    private onStateUpdate(data: string) {
+    private onState(data: string) {
         const parsed: IGame = JSON.parse(data);
         this.onStateSubscribers.forEach(x => x.onUpdate(parsed));
     }
@@ -92,6 +89,17 @@ export class SocketObservable {
 
         const id = uuid();
         this.onStartSubscribers.push({ id, onUpdate: cb });
+        return id;
+    }
+
+    public subscribeToState(cb: OnUpdate<IGame>): string {
+        if (!this.eventsSubscribedTo.state) {
+            this.socket?.on('state', this.onState);
+            this.eventsSubscribedTo.state = true;
+        }
+
+        const id = uuid();
+        this.onStateSubscribers.push({ id, onUpdate: cb });
         return id;
     }
     // #endregion
