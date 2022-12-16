@@ -1,0 +1,17 @@
+.main {
+    background-color: var(--background-orange-dark);
+    min-width: 100vw;
+    min-height: 100vh;
+    padding-top: 3rem;
+
+    * {
+        color: white;
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 1rem;
+    width: 100vw;
+}

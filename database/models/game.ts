@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, Types } from "mongoose";
+import mongoose, { Schema, Types } from 'mongoose';
 
 export type GameUser = {
     _id: Types.ObjectId | string;
@@ -21,6 +21,7 @@ export type IGame = {
     currentRound: number;
     players: Array<GameUser>;
     rounds: Array<Trial>;
+    biddingSeconds: number;
 }
 
 const gameSchema = new Schema({
@@ -28,6 +29,7 @@ const gameSchema = new Schema({
     startingBalance: { type: Number, required: true },
     state: { type: String, required: true, default: 'waiting' },
     currentRound: { type: String, required: true, default: 0 },
+    biddingSeconds: { type: Number, required: true, default: 30 },
     players: [{
         name: { type: String, required: true },
         imageURL: { type: String, required: false },

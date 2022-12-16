@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { FC, useState } from 'react';
 import styles from './index.module.scss'
-import { boolean, InferType, object, string } from 'yup';
+import { boolean, InferType, object, string, ValidationError } from 'yup';
 import { useRouter } from 'next/router';
 import { Button, Heading, Input, VStack } from '@chakra-ui/react';
 import axios, { AxiosResponse } from 'axios';
@@ -16,9 +16,9 @@ const formSchema = object({
 
 export type RoomData = InferType<typeof formSchema>;
 
-export default function indexPage() {
-    const [data, setData] = React.useState<RoomData>({ gameCode: '', name: '', isRemote: false, ID: null });
-    const [errors, setErrors] = React.useState({ gameCode: '', name: '', isRemote: '' });
+const IndexPage: FC<RoomData> = () => {
+    const [data, setData] = useState<RoomData>({ gameCode: '', name: '', isRemote: false, ID: null });
+    const [errors, setErrors] = useState({ gameCode: '', name: '', isRemote: '' });
     const router = useRouter();
 
     function update(inData: RoomData) {
@@ -42,26 +42,31 @@ export default function indexPage() {
         // Handle form validation
         try {
             await formSchema.validate(data, { abortEarly: false });
-        } catch (e: any) {
-            // Create an empty error object
-            const errors = { gameCode: '', name: '', isRemote: '' };
-            e.inner.forEach((error: any) => {
-                if (error.path == 'gameCode') {
-                    errors.gameCode += error.errors[0] + '\n';
-                } else if (error.path == 'name') {
-                    errors.name += error.errors[0] + '\n';
-                }
-                if (error.path == 'isRemote') {
-                    errors.isRemote += error.errors[0] + '\n';
-                }
-            });
+        } catch (e) {
+            if (e instanceof ValidationError) {
+                // Create an empty error object
+                const errors = { gameCode: '', name: '', isRemote: '' };
+                e.inner.forEach((error) => {
+                    if (error.path == 'gameCode') {
+                        errors.gameCode += error.errors[0] + '\n';
+                    } else if (error.path == 'name') {
+                        errors.name += error.errors[0] + '\n';
+                    }
+                    if (error.path == 'isRemote') {
+                        errors.isRemote += error.errors[0] + '\n';
+                    }
+                });
 
-            // Remove any trailing new line
-            errors.gameCode = errors.gameCode.trim();
-            errors.name = errors.name.trim();
-            errors.isRemote = errors.isRemote.trim();
-            setErrors(errors);
-            return;
+                // Remove any trailing new line
+                errors.gameCode = errors.gameCode.trim();
+                errors.name = errors.name.trim();
+                errors.isRemote = errors.isRemote.trim();
+                setErrors(errors);
+                return;
+            } else {
+                console.log(e);
+                return;
+            }
         }
 
         // If form validation passed, try inserting into the database
@@ -73,7 +78,7 @@ export default function indexPage() {
                 // Navigate to next page
                 router.push('/game/setup');
             }
-        } catch (e: any) {
+        } catch (e) {
             setErrors({ ...errors, gameCode: 'That game does not exsist' });
         }
     }
@@ -89,8 +94,8 @@ export default function indexPage() {
                     <Heading as='h1'>Join a game</Heading>
                     <label htmlFor='game-code'>Game Code</label>
                     <Input type='text' id='game-code' value={data.gameCode} onChange={e => update({ ...data, gameCode: e.target.value })} />
-                    {errors.gameCode && errors.gameCode.split('\n').map(x => (
-                        <p className='error'>{x}</p>
+                    {errors.gameCode && errors.gameCode.split('\n').map((x, idx) => (
+                        <p key={idx} className='error'>{x}</p>
                     ))}
                     <label htmlFor='game-code'>Name <span className={styles['not-bold']}>(max 12)</span></label>
                     <Input type='text' id='game-code' value={data.name} onChange={e => update({ ...data, name: e.target.value })} />
@@ -126,3 +131,5 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         }
     }
 }
+
+export default IndexPage;

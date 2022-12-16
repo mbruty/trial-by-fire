@@ -1,0 +1,28 @@
+.card {
+    * {
+        font-weight: bold;
+    }
+
+    .profile {
+        object-fit: cover;
+    }
+
+    .fire {
+        position: absolute;
+        bottom: 0;
+    }
+
+    .card-heading {
+        padding: 0.5rem 1rem;
+    }
+
+    user-select: none;
+
+    -webkit-box-shadow: 0px 0px 10px 10px rgba(212,117,49,1) !important;
+    -moz-box-shadow: 0px 0px 10px 10px rgba(212,117,49,1) !important;
+    box-shadow: 0px 0px 10px 10px rgba(212,117,49,1) !important;
+    position: relative;
+    background-color: var(--background-orange) !important;
+    height: 250px;
+    width: 200px;
+}

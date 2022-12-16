@@ -1,26 +1,47 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
-import Game, { GameUser, IGame } from '../../../database/models/game';
-import { Button, Card, CardHeader, Center, Heading, Image, StackDivider, Text, VStack } from '@chakra-ui/react';
-import imageSrcToGoogleCloudUrl from '../../../database/utilities/imageSrcToGoogleCloudUrl';
+import Game, { GameUser, IGame, Trial } from '../../../database/models/game';
+import { Heading, Text, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
 import useSocket from '../../../hooks/useSocket';
 import mongoConnection from '../../../database/mongoConnection';
 import { useRouter } from 'next/router';
+import RoundStart from '../../../components/host/RoundStart';
+import PlayerImage from '../../../components/host/PlayerImage';
+import RoundBids from '../../../components/host/RoundBids';
+
+
+enum RoundState {
+    STARTING,
+    BIDDING,
+    PLAYING,
+    ENDING
+}
+
+type GameState = {
+    currentRound: Trial
+    roundState: RoundState
+}
+
 type Props = {
     id: string;
     game: IGame
 }
 
-const GamePage: React.FC<Props> = (props: Props, context: any) => {
+const GamePage: React.FC<Props> = (props: Props) => {
     const [gameData, setGameData] = useState<IGame>(props.game);
+    const [gameState, setGameState] = useState<GameState>({
+        currentRound: props.game.rounds[props.game.currentRound],
+        roundState: RoundState.STARTING
+    });
+
     const socketContext = useSocket();
     const router = useRouter();
 
-    function onUserUpdate(data: Array<GameUser>) {
-        setGameData({ ...gameData, players: data });
-    }
+    const onUserUpdate = useCallback((data: Array<GameUser>) => {
+        setGameData(previous => { return { ...previous, players: data } });
+    }, []);
 
     useEffect(() => {
         const onUserUpdateId = socketContext.subscribeToOnUserUpdate(onUserUpdate);
@@ -31,55 +52,57 @@ const GamePage: React.FC<Props> = (props: Props, context: any) => {
         // On unmount, unsubscribe from the events
         return () => {
             socketContext.unsubscribeOnUserUpdate(onUserUpdateId);
+            socketContext.unsubscribeStart(onStartId);
         }
-    }, [socketContext]);
+    }, [socketContext, onUserUpdate, props.game.code, props.id, router]);
 
-    function start() {
-        socketContext.startGame(gameData.code, props.id);
+    function onNextRoundClick() {
+        const currentRound = gameData.rounds[gameData.currentRound];
+        setGameState({ currentRound, roundState: RoundState.BIDDING });
+
+        setGameData({ ...gameData, currentRound: gameData.currentRound + 1 });
     }
+
+    let element: JSX.Element = <></>;
+    let roundText = '';
+    if (gameState.roundState === RoundState.STARTING) {
+        const nextRoundTitle = gameData.rounds.length > gameData.currentRound ?
+            gameData.rounds[gameData.currentRound + 1].title : 'End of game';
+        roundText = 'Current Scores';
+        element = <RoundStart
+            onNextRoundClick={onNextRoundClick}
+            players={gameData.players}
+            nextRoundTitle={nextRoundTitle}
+        />;
+    }
+
+    else if (gameState.roundState === RoundState.BIDDING) {
+        roundText = 'Place your bids';
+        element = <RoundBids game={gameData} currentRound={gameState.currentRound} />
+    }
+
+    const half = Math.ceil(props.game.players.length / 2);
+    const firstHalf = props.game.players.slice(0, half);
+    const secondHalf = props.game.players.slice(half);
+
 
     return (
         <VStack className={styles.main}>
-            <Heading as='h1'>Waiting for players to join...</Heading>
-            <Text fontSize='2xl'>Join code: {gameData.code}</Text>
-            <div className={styles.content}>
-                {gameData.players.map(item => (
-                    <Card className={styles.card} maxW='sm' variant='elevated'>
-                        <CardHeader className={styles['card-heading']} fontSize='xl'>{item.name}</CardHeader>
-                        <StackDivider />
-                        {item.imageURL &&
-                            <>
-                                <Image
-                                    borderRadius='md'
-                                    className={styles.fire}
-                                    src='https://storage.googleapis.com/trial-by-fire/Fire.svg'
-                                />
-                                {item.imageURL ?
-                                    <Image
-                                        className={styles.profile}
-                                        height={200}
-                                        width={200}
-                                        borderRadius='md'
-                                        src={imageSrcToGoogleCloudUrl(item.imageURL)}
-                                        alt={`Player ${item.name}'s avatar`}
-                                    /> :
-                                    <Image
-                                        className={styles.profile}
-                                        height={200}
-                                        width={200}
-                                        borderRadius='md'
-                                        src='https://w7.pngwing.com/pngs/845/519/png-transparent-computer-icons-avatar-avatar-heroes-logo-fictional-character.png }'
-                                        alt={`Player ${item.name}'s avatar`}
-                                    />
-                                }
-                            </>
-                        }
-                    </Card>
-                ))}
+            <Heading as='h1'>{roundText}</Heading>
+            <Text fontSize='2xl'>Join the game: {gameData.code}</Text>
+            <div className={styles.grid}>
+                <VStack>
+                    {firstHalf.map(x => (
+                        <PlayerImage key={x._id as string} variant='sm' player={x} />
+                    ))}
+                </VStack>
+                {{ ...element }}
+                <VStack>
+                    {secondHalf.map(x => (
+                        <PlayerImage key={x._id as string} variant='sm' player={x} />
+                    ))}
+                </VStack>
             </div>
-            <Center>
-                <Button onClick={start} colorScheme='teal'>Start Game</Button>
-            </Center>
         </VStack>
     )
 }
@@ -88,22 +111,26 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // ensure mongo is connected
     await mongoConnection();
     const objId = context.params?.id as string;
-
-    if (!isObjectIdOrHexString(objId)) {
-        return {
-            redirect: {
-                destination: '/host/new',
-                permanent: false
-            }
+    const redirect = {
+        redirect: {
+            destination: '/host/new',
+            permanent: false
         }
+    }
+    if (!isObjectIdOrHexString(objId)) {
+        return redirect;
     }
 
     const game = await Game.findById(new Types.ObjectId(objId), { '_id': 0, 'rounds._id': 0, 'players._id': 0 }).lean();
 
     if (!game) {
+        return redirect;
+    }
+
+    if (game.state === 'waiting') {
         return {
             redirect: {
-                destination: '/host/new',
+                destination: `/host/lobby/${objId}`,
                 permanent: false
             }
         }

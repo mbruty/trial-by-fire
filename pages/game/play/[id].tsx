@@ -1,8 +1,8 @@
-import { isObjectIdOrHexString, Types } from "mongoose";
-import { GetServerSideProps } from "next";
-import { FC } from "react";
-import Game from "../../../database/models/game";
-import mongoConnection from "../../../database/mongoConnection";
+import { isObjectIdOrHexString, Types } from 'mongoose';
+import { GetServerSideProps } from 'next';
+import { FC } from 'react';
+import Game from '../../../database/models/game';
+import mongoConnection from '../../../database/mongoConnection';
 import styles from './[id].module.scss';
 type Props = {
 
