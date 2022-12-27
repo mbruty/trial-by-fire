@@ -51,3 +51,7 @@ a {
   position: relative;
   background-color: var(--background-orange) !important;
 }
+
+.background-dark-orange {
+  background-color: var(--background-orange-dark);
+}

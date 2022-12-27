@@ -6,6 +6,7 @@ import { Button, Heading, Input, VStack } from '@chakra-ui/react';
 import axios, { AxiosResponse } from 'axios';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
+import useOrangeBackground from '../../hooks/useOrangeBackground';
 
 const formSchema = object({
     ID: string().nullable(),
@@ -20,7 +21,7 @@ const IndexPage: FC<RoomData> = () => {
     const [data, setData] = useState<RoomData>({ gameCode: '', name: '', isRemote: false, ID: null });
     const [errors, setErrors] = useState({ gameCode: '', name: '', isRemote: '' });
     const router = useRouter();
-
+    useOrangeBackground();
     function update(inData: RoomData) {
         inData.gameCode = inData.gameCode?.replace(/-/g, '');
         inData.gameCode = inData.gameCode?.split('').map((element, index) => {
@@ -93,7 +94,7 @@ const IndexPage: FC<RoomData> = () => {
                 <VStack className={styles.container} spacing='1rem'>
                     <Heading as='h1'>Join a game</Heading>
                     <label htmlFor='game-code'>Game Code</label>
-                    <Input type='text' id='game-code' value={data.gameCode} onChange={e => update({ ...data, gameCode: e.target.value })} />
+                    <Input pattern='\d*' type='text' id='game-code' value={data.gameCode} onChange={e => update({ ...data, gameCode: e.target.value })} />
                     {errors.gameCode && errors.gameCode.split('\n').map((x, idx) => (
                         <p key={idx} className='error'>{x}</p>
                     ))}

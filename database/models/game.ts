@@ -6,6 +6,7 @@ export type GameUser = {
     imageURL?: string;
     beanBalance: number;
     isRemote: boolean;
+    currentBid?: number;
 }
 
 export type Trial = {
@@ -15,6 +16,7 @@ export type Trial = {
 }
 
 export type IGame = {
+    _id: Types.ObjectId | string;
     code: string;
     state: string;
     startingBalance: number;
@@ -22,6 +24,7 @@ export type IGame = {
     players: Array<GameUser>;
     rounds: Array<Trial>;
     biddingSeconds: number;
+    bidStartedTimeStamp: number;
 }
 
 const gameSchema = new Schema({
@@ -30,11 +33,13 @@ const gameSchema = new Schema({
     state: { type: String, required: true, default: 'waiting' },
     currentRound: { type: String, required: true, default: 0 },
     biddingSeconds: { type: Number, required: true, default: 30 },
+    bidStartedTimeStamp: { type: Number, required: false },
     players: [{
         name: { type: String, required: true },
         imageURL: { type: String, required: false },
         beanBalance: { type: Number, required: true },
-        isRemote: { type: Boolean, required: true }
+        isRemote: { type: Boolean, required: true },
+        currentBid: { type: Number, rquired: false }
     }],
     rounds: [{
         title: { type: String, required: true },

@@ -1,26 +1,24 @@
 import type { NextApiRequest as OriginalNextApiRequest, NextApiResponse as OriginalNextApiResponse } from 'next'
-import type { Socket as OriginalSocket } from 'node:net';
-import { Server } from 'socket.io';
 
 declare global {
     declare interface ServerToClientEvents {
         userUpdate: (data: string) => void;
         start: (data: string) => void;
-        state: (data: string) => void;
+        joined: (data: string) => void;
+        stateUpdate: (data: string) => void;
+        newBid: (data: string) => void;
     }
 
     declare interface ClientToServerEvents {
         join: (code: string) => void;
         start: (code: string) => void;
+        stateUpdate: (data: string) => void;
+        bid: (data: string) => void;
     }
 
-    declare interface NextApiRequest extends OriginalNextApiRequest {
+    type NextApiRequest = OriginalNextApiRequest
 
-    }
-
-    declare interface NextApiResponse<T = any> extends OriginalNextApiResponse<T> {
-
-    }
+    type NextApiResponse<T = unkown> = OriginalNextApiResponse<T>
 
     // region API request bodies
     declare interface ImageUploadBody {

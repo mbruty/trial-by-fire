@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
-import Game, { GameUser, IGame, Trial } from '../../../database/models/game';
+import Game, { IGame, Trial } from '../../../database/models/game';
 import { Heading, Text, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
 import useSocket from '../../../hooks/useSocket';
@@ -10,14 +10,9 @@ import { useRouter } from 'next/router';
 import RoundStart from '../../../components/host/RoundStart';
 import PlayerImage from '../../../components/host/PlayerImage';
 import RoundBids from '../../../components/host/RoundBids';
+import { RoundState, stateFromString } from '../../../types/RoundState';
+import RoundPlay from '../../../components/host/RoundPlay';
 
-
-enum RoundState {
-    STARTING,
-    BIDDING,
-    PLAYING,
-    ENDING
-}
 
 type GameState = {
     currentRound: Trial
@@ -33,18 +28,16 @@ const GamePage: React.FC<Props> = (props: Props) => {
     const [gameData, setGameData] = useState<IGame>(props.game);
     const [gameState, setGameState] = useState<GameState>({
         currentRound: props.game.rounds[props.game.currentRound],
-        roundState: RoundState.STARTING
+        roundState: stateFromString(props.game.state)
     });
 
     const socketContext = useSocket();
     const router = useRouter();
 
-    const onUserUpdate = useCallback((data: Array<GameUser>) => {
-        setGameData(previous => { return { ...previous, players: data } });
-    }, []);
-
     useEffect(() => {
-        const onUserUpdateId = socketContext.subscribeToOnUserUpdate(onUserUpdate);
+        const onUserUpdateId = socketContext.subscribeToOnUserUpdate((data) => {
+            setGameData(previous => { return { ...previous, players: data } });
+        });
         const onStartId = socketContext.subscribeToStart(() => {
             router.push(`/host/play/${props.id}`);
         });
@@ -54,36 +47,42 @@ const GamePage: React.FC<Props> = (props: Props) => {
             socketContext.unsubscribeOnUserUpdate(onUserUpdateId);
             socketContext.unsubscribeStart(onStartId);
         }
-    }, [socketContext, onUserUpdate, props.game.code, props.id, router]);
+    }, [socketContext, props.game.code, props.id, router]);
 
-    function onNextRoundClick() {
-        const currentRound = gameData.rounds[gameData.currentRound];
-        setGameState({ currentRound, roundState: RoundState.BIDDING });
+    function onStartRoundClick() {
+        socketContext.updateRoundState(RoundState.BIDDING);
+        setGameState({ ...gameState, roundState: RoundState.BIDDING });
+    }
 
-        setGameData({ ...gameData, currentRound: gameData.currentRound + 1 });
+    function onNextRoundClickBid() {
+        socketContext.updateRoundState(RoundState.PLAYING);
+        setGameState({ ...gameState, roundState: RoundState.PLAYING });
     }
 
     let element: JSX.Element = <></>;
     let roundText = '';
     if (gameState.roundState === RoundState.STARTING) {
-        const nextRoundTitle = gameData.rounds.length > gameData.currentRound ?
-            gameData.rounds[gameData.currentRound + 1].title : 'End of game';
         roundText = 'Current Scores';
         element = <RoundStart
-            onNextRoundClick={onNextRoundClick}
+            onStartRoundClick={onStartRoundClick}
             players={gameData.players}
-            nextRoundTitle={nextRoundTitle}
+            roundTitle={gameData.rounds[gameData.currentRound].title}
         />;
     }
 
     else if (gameState.roundState === RoundState.BIDDING) {
         roundText = 'Place your bids';
-        element = <RoundBids game={gameData} currentRound={gameState.currentRound} />
+        element = <RoundBids onNext={onNextRoundClickBid} game={gameData} currentRound={gameState.currentRound} />
     }
 
-    const half = Math.ceil(props.game.players.length / 2);
-    const firstHalf = props.game.players.slice(0, half);
-    const secondHalf = props.game.players.slice(half);
+    else if (gameState.roundState === RoundState.PLAYING) {
+        roundText = gameData.rounds[gameData.currentRound].title;
+        element = <RoundPlay gameId={props.id} timeLeft={gameData.rounds[gameData.currentRound].timeLimit} />
+    }
+
+    const half = Math.ceil(gameData.players.length / 2);
+    const firstHalf = gameData.players.slice(0, half);
+    const secondHalf = gameData.players.slice(half);
 
 
     return (
@@ -121,11 +120,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return redirect;
     }
 
-    const game = await Game.findById(new Types.ObjectId(objId), { '_id': 0, 'rounds._id': 0, 'players._id': 0 }).lean();
+    const game = await Game.findById(new Types.ObjectId(objId), { 'rounds._id': 0, 'players._id': 0 }).lean();
 
     if (!game) {
         return redirect;
     }
+
+    game._id = game._id.toString();
 
     if (game.state === 'waiting') {
         return {

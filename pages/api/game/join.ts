@@ -34,8 +34,8 @@ export default async function handler(
             setCookie('room-id', response.roomID, { req, res });
             res.json(response);
             res.status(200);
-        } catch (e: any) {
-            res.status(e);
+        } catch (e: unknown) {
+            res.status(e as number);
         } finally {
             res.end();
         }

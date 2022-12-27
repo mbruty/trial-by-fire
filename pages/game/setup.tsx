@@ -1,7 +1,6 @@
 import React, { FC } from 'react';
 import styles from './setup.module.scss';
 import Camera from '../../components/Camera';
-import { RoomData } from '.';
 import { Heading } from '@chakra-ui/react';
 import { VStack } from '@chakra-ui/react'
 import { useRouter } from 'next/router';
@@ -9,12 +8,11 @@ import axios from 'axios';
 import Head from 'next/head';
 import useSocket from '../../hooks/useSocket';
 import { GetServerSideProps } from 'next';
-import { parse } from 'cookie';
 import mongoConnection from '../../database/mongoConnection';
 import Game, { IGame } from '../../database/models/game';
-import mongoose from 'mongoose';
-import { getCookie } from 'cookies-next';
+import { deleteCookie, getCookie } from 'cookies-next';
 import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
+import useOrangeBackground from '../../hooks/useOrangeBackground';
 
 type Props = {
     game: IGame,
@@ -22,10 +20,11 @@ type Props = {
 }
 
 const SetupPage: FC<Props> = ({ game, ID }) => {
-    const [imageUrl, setImageUrl] = React.useState<string | null>(null);
     const [imageSaved, setImageSaved] = React.useState(false);
+    const [shouldNavigateToPlayAfterSave, setShouldNavigateToPlayAfterSave] = React.useState(game.state !== 'waiting');
     const router = useRouter();
     const socket = useSocket();
+    useOrangeBackground();
 
     const player = game.players.find(x => x._id.toString() === ID);
     const imgSrc = player?.imageURL ? imageSrcToGoogleCloudUrl(player?.imageURL) : '';
@@ -41,6 +40,10 @@ const SetupPage: FC<Props> = ({ game, ID }) => {
 
         // Subscribe to on start
         const id = socket.subscribeToStart((gameId: string) => {
+            // If the player hasn't got an image, don't naviagte them away yet...
+            if (!imageSaved) {
+                return setShouldNavigateToPlayAfterSave(true);
+            }
             router.push(`/game/play/${gameId}`);
         });
 
@@ -48,7 +51,7 @@ const SetupPage: FC<Props> = ({ game, ID }) => {
         return () => {
             socket.unsubscribeStart(id);
         }
-    }, []);
+    }, [imgSrc, game.code, router, socket, imageSaved]);
 
     async function uploadToServer(data: string) {
         if (!game.code || !ID) {
@@ -62,14 +65,16 @@ const SetupPage: FC<Props> = ({ game, ID }) => {
             imageBase64: data
         };
 
-        setImageUrl(data);
         const res = await axios.post('/api/image/upload', body);
 
         if (res.status == 200) {
             setImageSaved(true);
         }
 
-    };
+        if (shouldNavigateToPlayAfterSave) {
+            router.push(`/game/play/${game._id}`);
+        }
+    }
 
     function onReset() {
         setImageSaved(false);
@@ -109,8 +114,37 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // ensure mongo is initalised
     await mongoConnection();
 
-    const game = await Game.findById(roomId, { '_id': 0, 'rounds._id': 0 }).lean();
-    game?.players.forEach(x => x._id = x._id.toString());
+    const game = await Game.findById(roomId, { 'rounds._id': 0 }).lean();
+
+    const player = game?.players.find(x => x._id.toString() === playerId);
+
+    // IF we can't find the game that means it's already finished
+    if (!game) {
+
+        // Remove the cookies
+        deleteCookie('id');
+        deleteCookie('room-id');
+
+        // Redirect to game
+        return {
+            redirect: {
+                destination: '/game',
+                permanent: false
+            }
+        }
+    }
+
+    if (game?.state !== 'waiting' && player?.imageURL) {
+        return {
+            redirect: {
+                destination: `/game/play/${roomId}`,
+                permanent: false
+            }
+        }
+    }
+
+    game.players.forEach(x => x._id = x._id.toString());
+    game._id = game._id.toString();
 
     return {
         props: {

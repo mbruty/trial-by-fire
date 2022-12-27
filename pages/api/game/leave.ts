@@ -1,15 +1,14 @@
 import { Storage } from '@google-cloud/storage';
 import { deleteCookie } from 'cookies-next';
-import mongoose from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path';
-import Game, { IGame } from '../../../database/models/game';
+import Game from '../../../database/models/game';
 import getPlayerImage from '../../../database/utilities/getPlayerImage';
 import getServerSocket from '../../../sockets/getServerSocket';
 
 const gc = new Storage({
     keyFilename: path.join(__dirname, '../../../../../gcp-storage-key.json'),
-    projectId: "finalyearproject-363115 ",
+    projectId: 'finalyearproject-363115 ',
 });
 
 const imgBucket = gc.bucket('trial-by-fire');
@@ -40,7 +39,7 @@ export default async function handler(
             deleteCookie('id', { req, res });
             deleteCookie('room-id', { req, res });
             res.status(200);
-        } catch (e: any) {
+        } catch (e: unknown) {
             res.status(400);
         } finally {
             res.end();

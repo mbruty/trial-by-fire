@@ -9,7 +9,7 @@ import getServerSocket from '../../../sockets/getServerSocket';
 
 const gc = new Storage({
     keyFilename: path.join(__dirname, '../../../../../gcp-storage-key.json'),
-    projectId: "finalyearproject-363115 ",
+    projectId: 'finalyearproject-363115 ',
 });
 
 const imgBucket = gc.bucket('trial-by-fire');
@@ -37,9 +37,9 @@ export async function postImage(body: ImageUploadBody) {
     const updated = await Game.findOneAndUpdate(
         {
             code: body.gameCode,
-            "players._id": new mongoose.Types.ObjectId(body.userId)
+            'players._id': new mongoose.Types.ObjectId(body.userId)
         },
-        { $set: { "players.$.imageURL": fileName } },
+        { $set: { 'players.$.imageURL': fileName } },
         { new: true }
     );
 
@@ -54,7 +54,7 @@ export default async function handler(
     res: NextApiResponse
 ) {
     if (req.method == 'POST') {
-        const id = await postImage(req.body).catch(e => { console.log(e); res.status(400) });
+        await postImage(req.body).catch(e => { console.log(e); res.status(400) });
         res.status(200);
         return res.end();
     }

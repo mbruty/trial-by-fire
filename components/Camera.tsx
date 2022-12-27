@@ -59,9 +59,10 @@ const Camera: React.FC<CameraProps> = (props) => {
                         width={videoConstraints.width}
                         screenshotFormat="image/jpeg"
                         videoConstraints={videoConstraints}
+                        mirrored={true}
                     />
                 ) : (
-                    <img src={picture} />
+                    <img src={picture}  alt='Your picture'/>
                 )}
             </div>
             <div>
