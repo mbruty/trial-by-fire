@@ -7,11 +7,11 @@ import styles from './roundstart.module.scss';
 
 type Props = {
     players: Array<GameUser>;
-    nextRoundTitle: string;
-    onNextRoundClick: () => void;
+    roundTitle: string;
+    onStartRoundClick: () => void;
 }
 
-const RoundStart: FC<Props> = ({ players, nextRoundTitle, onNextRoundClick }) => {
+const RoundStart: FC<Props> = ({ players, roundTitle, onStartRoundClick }) => {
 
     useEffect(() => {
         let goingDown = true;
@@ -42,10 +42,10 @@ const RoundStart: FC<Props> = ({ players, nextRoundTitle, onNextRoundClick }) =>
     return (
         <div className={styles.main}>
             <Center>
-                <Heading as='h2' fontSize='2xl'>Next up: {nextRoundTitle}</Heading>
+                <Heading as='h2' fontSize='2xl'>Next up: {roundTitle}</Heading>
             </Center>
             <Center style={{ margin: '1rem 0' }}>
-                <Button onClick={() => onNextRoundClick()} colorScheme='teal' variant='solid'>Next round</Button>
+                <Button onClick={() => onStartRoundClick()} colorScheme='teal' variant='solid'>Start round</Button>
             </Center>
             <div>
                 <Box className='container' borderRadius='md' borderColor='white' borderWidth='thin'>
