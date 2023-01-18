@@ -17,7 +17,7 @@ const formSchema = object({
 
 export type RoomData = InferType<typeof formSchema>;
 
-const IndexPage: FC<RoomData> = () => {
+const IndexPage: FC = () => {
     const [data, setData] = useState<RoomData>({ gameCode: '', name: '', isRemote: false, ID: null });
     const [errors, setErrors] = useState({ gameCode: '', name: '', isRemote: '' });
     const router = useRouter();

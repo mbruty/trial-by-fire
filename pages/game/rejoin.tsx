@@ -1,6 +1,7 @@
 import { Button, Heading, HStack, VStack } from '@chakra-ui/react';
 import axios from 'axios';
 import { deleteCookie, getCookie } from 'cookies-next';
+import mongoConnection from 'database/mongoConnection';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import React, { FC } from 'react';
@@ -17,7 +18,7 @@ type Props = {
     image: string;
 }
 
-const setupPage: FC<Props> = (props) => {
+const SetupPage: FC<Props> = (props) => {
     const router = useRouter();
 
     async function newGame() {
@@ -35,7 +36,7 @@ const setupPage: FC<Props> = (props) => {
     return (
         <div className={styles.main}>
             <VStack className={styles.container} spacing='1rem'>
-                <Heading as='h1'>Oops, it looks like you've disconnected from your game</Heading>
+                <Heading as='h1'>Oops, it looks like you&apos;ve disconnected from your game</Heading>
                 <p>
                     Previous game:<br />
                     Name: {props.playerName}<br />
@@ -52,8 +53,11 @@ const setupPage: FC<Props> = (props) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+    // ensure mongo is initalised
+    await mongoConnection();
+
     // If there is not a game in the cookies, redirect to the standard join page
-    if (!context.req.cookies['room-id']) {
+    if (!context.req.cookies['room-id'] || !context.req.cookies['id']) {
         return {
             redirect: {
                 destination: '/game',
@@ -85,4 +89,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 }
 
-export default setupPage;
+export default SetupPage;

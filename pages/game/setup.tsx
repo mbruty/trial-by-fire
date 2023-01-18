@@ -99,8 +99,11 @@ const SetupPage: FC<Props> = ({ game, ID }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
+    // ensure mongo is initalised
+    await mongoConnection();
+
     // If we don't have a room id cookie, redirect back to the /game page
-    if (!context.req.cookies['room-id']) {
+    if (!context.req.cookies['room-id'] || !context.req.cookies['id']) {
         return {
             redirect: {
                 destination: '/game',
@@ -111,8 +114,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const playerId = getCookie('id', { ...context });
     const roomId = getCookie('room-id', { ...context });
-    // ensure mongo is initalised
-    await mongoConnection();
 
     const game = await Game.findById(roomId, { 'rounds._id': 0 }).lean();
 
@@ -134,6 +135,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         }
     }
 
+    // If the game isn't waiting, and the player has an image
     if (game?.state !== 'waiting' && player?.imageURL) {
         return {
             redirect: {
