@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Game, { IGame } from 'models/game';
+import Game, { IGame } from 'database/models/game';
 
 async function getPlayerImage(gameCode: string, userId: string) {
     // Get the players image url and delete
