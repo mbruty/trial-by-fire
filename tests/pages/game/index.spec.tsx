@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
 import { getServerSideProps } from '../../../pages/game/index';
 import { ContextWithCookies } from '../../../types/ContextWithCookies';
+
+vi.mock('cookies-next');
 
 test('getServerSideProps returns redirect with correct cookies present', async () => {
     const context: ContextWithCookies = { req: { cookies: {} } };

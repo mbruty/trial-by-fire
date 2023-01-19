@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { clearMockDb, connectMockDb, disconnectMockDb } from 'tests/utils/setupDatabase';
-import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from 'vitest'
+import { connectMockDb, disconnectMockDb } from 'tests/utils/setupDatabase';
+import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { getServerSideProps } from '../../../pages/game/setup';
 import { ContextWithCookies } from '../../../types/ContextWithCookies';
-import Game, { IGame } from '../../../database/models/game';
+import Game from '../../../database/models/game';
 import { Types } from 'mongoose';
+
+vi.mock('cookies-next');
 
 let roomId: string | Types.ObjectId;
 let playerId: string | Types.ObjectId;
@@ -54,8 +56,8 @@ test('getServerSideProps redirects with no cookies', async () => {
 
 test('getServerSideProps redirects with no room id', async () => {
     const context: ContextWithCookies = { req: { cookies: {} } };
-    const result: any = await getServerSideProps(context as any);
     context.req.cookies['id'] = playerId.toString();
+    const result: any = await getServerSideProps(context as any);
 
     expect(result.redirect).toBeDefined();
     expect(result.redirect.destination).toBe('/game');
@@ -64,8 +66,8 @@ test('getServerSideProps redirects with no room id', async () => {
 
 test('getServerSideProps redirects with no player id', async () => {
     const context: ContextWithCookies = { req: { cookies: {} } };
-    const result: any = await getServerSideProps(context as any);
     context.req.cookies['room-id'] = roomId.toString();
+    const result: any = await getServerSideProps(context as any);
 
     expect(result.redirect).toBeDefined();
     expect(result.redirect.destination).toBe('/game');
@@ -148,10 +150,12 @@ test('getServerSideProps returns the correct props', async () => {
     const { props }: any = await getServerSideProps(context as any);
     expect(props.game).toBeDefined();
     expect(props.game).toMatchObject({
+        _id: roomId.toString(),
         code: '123',
         startingBalance: 100,
         state: 'waiting',
         players: [{
+            _id: playerId.toString(),
             name: 'test',
             beanBalance: 0,
             isRemote: true,

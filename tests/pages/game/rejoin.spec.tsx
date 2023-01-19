@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { clearMockDb, connectMockDb, disconnectMockDb } from 'tests/utils/setupDatabase';
-import { afterAll, afterEach, beforeAll, beforeEach, expect, test } from 'vitest'
+import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest'
 import { getServerSideProps } from '../../../pages/game/rejoin';
 import { ContextWithCookies } from '../../../types/ContextWithCookies';
 import Game from '../../../database/models/game';
 import { Types } from 'mongoose';
+
+vi.mock('cookies-next');
+
 
 let roomId: string | Types.ObjectId;
 let playerId: string | Types.ObjectId;
