@@ -1,10 +1,9 @@
 import { connect, set } from 'mongoose';
-
 /*
 * Connects to mongodb
 * @param  connectionString - The connection string to use, used for connecting to test databases. Pass nothing to use the default connection
 */
-export default async function (connectionString = '') {
+async function connectDb (connectionString = '') {
     /*
     * David... If you're reading this,
     * I know that using globals is a bad idea, but with how next.js server works, there's no alternative
@@ -14,7 +13,6 @@ export default async function (connectionString = '') {
 
     // @ts-ignore
     if (!global.db) {
-        console.log('connecting to mongo...')
         if (connectionString) {
             set('strictQuery', true);
             await connect(connectionString);
@@ -28,3 +26,5 @@ export default async function (connectionString = '') {
     }
 
 }
+
+export default connectDb;

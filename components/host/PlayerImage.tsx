@@ -1,10 +1,10 @@
 // This will display a player's image if no webRTC connection, and the view if there is
 
-import { Card, CardHeader, Center, StackDivider, Text } from '@chakra-ui/react';
+import { Card, CardHeader, StackDivider } from '@chakra-ui/react';
 import Image from 'next/image';
 import { FC } from 'react';
-import { GameUser } from '../../database/models/game';
-import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
+import { GameUser } from 'database/models/game';
+import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
 import styles from './playerimage.module.scss';
 
 type Props = {

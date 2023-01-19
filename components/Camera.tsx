@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Webcam from 'react-webcam'
 import { Button, HStack } from '@chakra-ui/react'
+import Image from 'next/image';
 
 type VideoConstraints = {
     width: number;
@@ -62,7 +63,7 @@ const Camera: React.FC<CameraProps> = (props) => {
                         mirrored={true}
                     />
                 ) : (
-                    <img src={picture}  alt='Your picture'/>
+                    <Image src={picture}  alt='Your picture'/>
                 )}
             </div>
             <div>

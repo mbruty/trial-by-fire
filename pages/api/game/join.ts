@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Game, { GameUser } from '../../../database/models/game';
+import Game, { GameUser } from 'database/models/game';
 import { setCookie } from 'cookies-next';
 
 
@@ -23,7 +23,7 @@ export async function createAnonymousUser(body: JoinRoomBody): Promise<JoinRoomR
     return { ID: id.toString(), roomID: room._id.toString() }
 }
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
@@ -41,3 +41,5 @@ export default async function handler(
         }
     }
 }
+
+export default handler;

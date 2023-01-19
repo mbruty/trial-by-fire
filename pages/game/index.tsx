@@ -6,7 +6,7 @@ import { Button, Heading, Input, VStack } from '@chakra-ui/react';
 import axios, { AxiosResponse } from 'axios';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
-import useOrangeBackground from '../../hooks/useOrangeBackground';
+import useOrangeBackground from 'hooks/useOrangeBackground';
 
 const formSchema = object({
     ID: string().nullable(),

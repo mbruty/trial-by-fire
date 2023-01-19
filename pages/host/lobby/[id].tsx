@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
-import Game, { GameUser, IGame } from '../../../database/models/game';
+import Game, { GameUser, IGame } from 'database/models/game';
 import { Button, Center, Heading, Text, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
-import useSocket from '../../../hooks/useSocket';
-import mongoConnection from '../../../database/mongoConnection';
+import useSocket from 'hooks/useSocket';
+import mongoConnection from 'database/mongoConnection';
 import { useRouter } from 'next/router';
-import PlayerImage from '../../../components/host/PlayerImage';
+import PlayerImage from 'components/host/PlayerImage';
+
 type Props = {
     id: string;
     game: IGame
@@ -36,7 +37,7 @@ const GamePage: React.FC<Props> = (props: Props) => {
     }, [socketContext, onUserUpdate, props.game.code, props.id, router]);
 
     function start() {
-        socketContext.startGame(gameData.code, props.id);
+        socketContext.startGame(gameData.code);
     }
 
     return (

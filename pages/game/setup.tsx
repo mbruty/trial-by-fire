@@ -1,18 +1,18 @@
 import React, { FC } from 'react';
 import styles from './setup.module.scss';
-import Camera from '../../components/Camera';
+import Camera from 'components/Camera';
 import { Heading } from '@chakra-ui/react';
 import { VStack } from '@chakra-ui/react'
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import Head from 'next/head';
-import useSocket from '../../hooks/useSocket';
+import useSocket from 'hooks/useSocket';
 import { GetServerSideProps } from 'next';
-import mongoConnection from '../../database/mongoConnection';
-import Game, { IGame } from '../../database/models/game';
+import mongoConnection from 'database/mongoConnection';
+import Game, { IGame } from 'database/models/game';
 import { deleteCookie, getCookie } from 'cookies-next';
-import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
-import useOrangeBackground from '../../hooks/useOrangeBackground';
+import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
+import useOrangeBackground from 'hooks/useOrangeBackground';
 
 type Props = {
     game: IGame,

@@ -1,8 +1,8 @@
-import '../styles/globals.css'
+import 'styles/globals.css'
 import type { AppProps } from 'next/app'
 import { ChakraProvider } from '@chakra-ui/react'
 import { useEffect } from 'react'
-import { SocketObservable, WebsocketContext } from '../contexts/websocketContext';
+import { SocketObservable, WebsocketContext } from 'contexts/websocketContext';
 
 export default function App({ Component, pageProps }: AppProps) {
 
@@ -10,5 +10,11 @@ export default function App({ Component, pageProps }: AppProps) {
     fetch('/api/ws/socket-io');
   }, []);
 
-  return <ChakraProvider><WebsocketContext.Provider value={new SocketObservable()}><Component {...pageProps} /></WebsocketContext.Provider></ChakraProvider>
+  return (
+    <ChakraProvider>
+      <WebsocketContext.Provider value={new SocketObservable()}>
+        <Component {...pageProps} />
+      </WebsocketContext.Provider>
+    </ChakraProvider>
+  );
 }

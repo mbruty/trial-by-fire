@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Game from '../../../database/models/game';
+import Game from 'database/models/game';
 
 function createCode(): string {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -29,7 +29,7 @@ export async function createGame(body: CreateGameBody): Promise<CreateGameRespon
     }
 }
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
@@ -45,3 +45,5 @@ export default async function handler(
         }
     }
 }
+
+export default handler;

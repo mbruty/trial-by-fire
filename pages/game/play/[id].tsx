@@ -3,12 +3,12 @@ import { getCookie } from 'cookies-next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
 import { GetServerSideProps } from 'next';
 import { FC, useEffect, useState } from 'react';
-import Bid from '../../../components/game/Bid';
-import Game, { IGame } from '../../../database/models/game';
-import mongoConnection from '../../../database/mongoConnection';
-import useOrangeBackground from '../../../hooks/useOrangeBackground';
-import useSocket from '../../../hooks/useSocket';
-import { RoundState, stateFromString } from '../../../types/RoundState';
+import Bid from 'components/game/Bid';
+import Game, { IGame } from 'database/models/game';
+import mongoConnection from 'database/mongoConnection';
+import useOrangeBackground from 'hooks/useOrangeBackground';
+import useSocket from 'hooks/useSocket';
+import { RoundState, stateFromString } from 'types/RoundState';
 import styles from './[id].module.scss';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
 
 const PlayPage: FC<Props> = (props) => {
     const [gameState, setGameState] = useState(stateFromString(props.game.state));
-    const [game, setGame] = useState(props.game);
+    const game = props.game;
     const socket = useSocket();
     useOrangeBackground();
 
@@ -73,7 +73,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!isObjectIdOrHexString(objId)) {
         return {
             redirect: {
-                destination: '/host/new',
+                destination: '/game',
                 permanent: false
             }
         }

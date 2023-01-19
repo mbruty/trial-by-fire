@@ -1,10 +1,7 @@
-import { Box, Button, Center, Heading, HStack, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from '@chakra-ui/react';
+import { Text } from '@chakra-ui/react';
 import axios from 'axios';
-import Image from 'next/image';
-import { FC, useCallback, useEffect, useState } from 'react';
-import { GameUser, IGame, Trial } from '../../database/models/game';
-import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
-import useSocket from '../../hooks/useSocket';
+import { FC, useEffect, useState } from 'react';
+import { GameUser } from '../../database/models/game';
 import PlayerImage from './PlayerImage';
 import styles from './roundplay.module.scss';
 
@@ -22,7 +19,6 @@ function secondsToTime(e: number){
 }
 
 const RoundPlay: FC<Props> = (props) => {
-    const socket = useSocket();
     const [timeLeft, setTimeLeft] = useState(props.timeLeft * 60);
     const [isStarted, setIsStarted] = useState(false);
     const [players, setPlayers] = useState<Array<GameUser> | undefined>();
@@ -32,7 +28,7 @@ const RoundPlay: FC<Props> = (props) => {
         axios.get<Array<GameUser>>(`/api/game/${props.gameId}/bets`)
             .then(res => setPlayers(res.data.slice(0, 2)))
             .catch(console.error);
-    })
+    }, [props.gameId]);
 
     useEffect(() => {
         let interval: NodeJS.Timer | undefined;

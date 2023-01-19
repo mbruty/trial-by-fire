@@ -3,10 +3,11 @@ import axios from 'axios';
 import { deleteCookie, getCookie } from 'cookies-next';
 import mongoConnection from 'database/mongoConnection';
 import { GetServerSideProps } from 'next';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import React, { FC } from 'react';
-import Game from '../../database/models/game';
-import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
+import Game from 'database/models/game';
+import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
 import styles from './setup.module.scss';
 
 type Props = {
@@ -42,7 +43,7 @@ const SetupPage: FC<Props> = (props) => {
                     Name: {props.playerName}<br />
                     RoomCode: {props.gameCode}<br />
                 </p>
-                {props.image && <img src={props.image} />}
+                {props.image && <Image src={props.image} alt='Your last game&apos;s image' />}
                 <HStack spacing='1rem'>
                     <Button colorScheme='teal' onClick={rejoin}>Rejoin</Button>
                     <Button colorScheme='teal' onClick={newGame}>New game</Button>

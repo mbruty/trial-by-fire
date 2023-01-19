@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import Game from '../../../../database/models/game';
+import Game from 'database/models/game';
 
 export async function createGame(gameId: string) {
     const game = await Game.findById(gameId);
@@ -13,7 +13,7 @@ export async function createGame(gameId: string) {
     return players;
 }
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
@@ -29,3 +29,5 @@ export default async function handler(
         }
     }
 }
+
+export default handler;

@@ -2,9 +2,9 @@ import { Box, Button, Heading, HStack, Table, TableContainer, Tbody, Td, Text, T
 import axios from 'axios';
 import Image from 'next/image';
 import { FC, useCallback, useEffect, useState } from 'react';
-import { GameUser, IGame, Trial } from '../../database/models/game';
-import imageSrcToGoogleCloudUrl from '../../database/utilities/imageSrcToGoogleCloudUrl';
-import useSocket from '../../hooks/useSocket';
+import { GameUser, IGame, Trial } from 'database/models/game';
+import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
+import useSocket from 'hooks/useSocket';
 import styles from './roundstart.module.scss';
 
 type Props = {

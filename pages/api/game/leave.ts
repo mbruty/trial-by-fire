@@ -2,9 +2,9 @@ import { Storage } from '@google-cloud/storage';
 import { deleteCookie } from 'cookies-next';
 import type { NextApiRequest, NextApiResponse } from 'next'
 import path from 'path';
-import Game from '../../../database/models/game';
-import getPlayerImage from '../../../database/utilities/getPlayerImage';
-import getServerSocket from '../../../sockets/getServerSocket';
+import Game from 'database/models/game';
+import getPlayerImage from 'database/utilities/getPlayerImage';
+import getServerSocket from 'sockets/getServerSocket';
 
 const gc = new Storage({
     keyFilename: path.join(__dirname, '../../../../../gcp-storage-key.json'),
@@ -29,7 +29,7 @@ export async function leaveRoom(body: LeaveRoomBody) {
     io.to(updated.code).emit('userUpdate', JSON.stringify(updated.players));
 }
 
-export default async function handler(
+async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
@@ -46,3 +46,5 @@ export default async function handler(
         }
     }
 }
+
+export default handler;

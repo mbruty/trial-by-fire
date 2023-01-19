@@ -1,4 +1,4 @@
-import Game from '../database/models/game';
+import Game from 'database/models/game';
 import getServerSocket from './getServerSocket';
 
 async function bid(message: string) {

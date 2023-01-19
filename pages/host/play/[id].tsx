@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
-import Game, { IGame, Trial } from '../../../database/models/game';
+import Game, { IGame, Trial } from 'database/models/game';
 import { Heading, Text, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
-import useSocket from '../../../hooks/useSocket';
-import mongoConnection from '../../../database/mongoConnection';
+import useSocket from 'hooks/useSocket';
+import mongoConnection from 'database/mongoConnection';
 import { useRouter } from 'next/router';
-import RoundStart from '../../../components/host/RoundStart';
-import PlayerImage from '../../../components/host/PlayerImage';
-import RoundBids from '../../../components/host/RoundBids';
-import { RoundState, stateFromString } from '../../../types/RoundState';
-import RoundPlay from '../../../components/host/RoundPlay';
+import RoundStart from 'components/host/RoundStart';
+import PlayerImage from 'components/host/PlayerImage';
+import RoundBids from 'components/host/RoundBids';
+import { RoundState, stateFromString } from 'types/RoundState';
+import RoundPlay from 'components/host/RoundPlay';
 
 
 type GameState = {

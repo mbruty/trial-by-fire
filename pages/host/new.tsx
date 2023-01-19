@@ -1,19 +1,18 @@
 import { AddIcon, ChevronDownIcon, DeleteIcon, DragHandleIcon } from '@chakra-ui/icons';
-import { Box, Button, Center, FormLabel, Heading, HStack, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, Stack, Text, VStack } from '@chakra-ui/react';
+import { Box, Button, Center, FormLabel, Heading, HStack, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, Stack, Text } from '@chakra-ui/react';
 import axios, { AxiosResponse } from 'axios';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useState } from 'react';
-import { Trial } from '../../database/models/game';
+import { Trial } from 'database/models/game';
 import styles from './new.module.scss';
 
 // Have to use the old require syntax for this, as it's lacking TS support
+// eslint-disable-next-line
 const Reorder = require('react-reorder');
 const reorder = Reorder.reorder;
-const reorderImmutable = Reorder.reorderImmutable;
-const reorderFromTo = Reorder.reorderFromTo;
-const reorderFromToImmutable = Reorder.reorderFromToImmutable;
+
 
 
 type FormData = {
@@ -37,10 +36,9 @@ const NewTrialPage: FC = () => {
     }
 
     function updateFormData(index: number, value: string, key: string) {
-        const copy = [...formData.trials];
-        // @ts-ignore
+        const copy = [...formData.trials] as unknown as Array<Record<string, string>>;
         copy[index][key] = value;
-        setFormData({ ...formData, trials: copy })
+        setFormData({ ...formData, trials: copy as unknown as Array<Trial> })
     }
 
     function deleteTrial(index: number) {
@@ -50,6 +48,7 @@ const NewTrialPage: FC = () => {
     }
 
     // Have to use any a sthis package doesn't have TS support
+    // eslint-disable-next-line
     function onReorder(event: any, previousIndex: any, nextIndex: any, fromId: any, toId: any) {
         setFormData({
             ...formData,
@@ -108,6 +107,7 @@ const NewTrialPage: FC = () => {
                 >
                     {formData.trials.map((value, index) => (
                         <Box
+                            key={index}
                             maxW='container.lg'
                             borderWidth='0'
                             borderRadius='lg'

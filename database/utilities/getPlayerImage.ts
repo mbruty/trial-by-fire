@@ -1,7 +1,7 @@
-import mongoose from "mongoose";
-import Game, { IGame } from "../models/game";
+import mongoose from 'mongoose';
+import Game, { IGame } from 'models/game';
 
-export default async function (gameCode: string, userId: string) {
+async function getPlayerImage(gameCode: string, userId: string) {
     // Get the players image url and delete
     const game = await Game.aggregate<IGame>(
         [
@@ -33,3 +33,5 @@ export default async function (gameCode: string, userId: string) {
 
     return game[0].players[0].imageURL;
 }
+
+export default getPlayerImage;

@@ -1,9 +1,9 @@
 import { Server } from 'socket.io'
-import mongoConnection from '../../../database/mongoConnection';
-import bid from '../../../sockets/bid';
-import joinRoom from '../../../sockets/joinRoom';
-import startGame from '../../../sockets/startGame';
-import stateUpdate from '../../../sockets/stateUpdate';
+import mongoConnection from 'database/mongoConnection';
+import bid from 'sockets/bid';
+import joinRoom from 'sockets/joinRoom';
+import startGame from 'sockets/startGame';
+import stateUpdate from 'sockets/stateUpdate';
 // I have to  disable typescript checks as it's not letting me declare a variable in the 'globalThis' type
 // It also think that' res.socket.server isn't a thing when it is
 // Then eslint is setup to stop me from doing ts-ignore
