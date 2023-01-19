@@ -7,7 +7,7 @@ function createCode(): string {
 }
 
 export async function createGame(body: CreateGameBody): Promise<CreateGameResponse> {
-    if (body.trials.length === 0) {
+    if (!body.trials || body.trials.length === 0 || !body.starterBeanCount) {
         throw 400;
     }
 
@@ -17,15 +17,19 @@ export async function createGame(body: CreateGameBody): Promise<CreateGameRespon
         code = createCode();
     } while (await Game.countDocuments({ code }) !== 0);
 
-    const created = await Game.create({
-        code,
-        startingBalance: body.starterBeanCount,
-        rounds: body.trials
-    })
-
-    return {
-        code,
-        gameId: created._id.toString()
+    try {
+        const created = await Game.create({
+            code,
+            startingBalance: body.starterBeanCount,
+            rounds: body.trials
+        })
+    
+        return {
+            code,
+            gameId: created._id.toString()
+        }
+    } catch {
+        throw 400;
     }
 }
 
@@ -43,6 +47,9 @@ async function handler(
         } finally {
             res.end();
         }
+    } else {
+        res.status(405);
+        res.end();
     }
 }
 

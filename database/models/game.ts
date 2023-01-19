@@ -44,7 +44,7 @@ const gameSchema = new Schema({
     rounds: [{
         title: { type: String, required: true },
         type: { type: String, required: true },
-        timeLimit: { type: Number, required: true }
+        timeLimit: { type: Number, required: false }
     }]
 })
 

@@ -5,7 +5,9 @@ import { setCookie } from 'cookies-next';
 
 
 
-export async function createAnonymousUser(body: JoinRoomBody): Promise<JoinRoomResponse> {
+export async function createAnonymousUser(body?: JoinRoomBody): Promise<JoinRoomResponse> {
+    if (!body) throw 400;
+    
     const id = new mongoose.Types.ObjectId();
     const room = await Game.findOne({ 'code': body.gameCode });
     if (!room) throw 400;
@@ -18,9 +20,13 @@ export async function createAnonymousUser(body: JoinRoomBody): Promise<JoinRoomR
 
     room.players.push(gameUser);
 
-    await room.save();
+    try {
+        await room.save();
 
-    return { ID: id.toString(), roomID: room._id.toString() }
+        return { ID: id.toString(), roomID: room._id.toString() }
+    } catch {
+        throw 400;
+    }
 }
 
 async function handler(
@@ -39,6 +45,9 @@ async function handler(
         } finally {
             res.end();
         }
+    } else {
+        res.status(405);
+        res.end();
     }
 }
 

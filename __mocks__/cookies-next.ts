@@ -8,3 +8,5 @@ export const getCookie = vi.fn().mockImplementation((key: string, options: Optio
 });
 
 export const deleteCookie = vi.fn().mockImplementation(() => null);
+
+export const setCookie = vi.fn();

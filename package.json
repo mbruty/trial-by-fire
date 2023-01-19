@@ -49,6 +49,7 @@
     "@vitest/coverage-c8": "^0.27.2",
     "jsdom": "^21.0.0",
     "testcontainers-mongoose": "^1.1.0",
+    "vite-tsconfig-paths": "^4.0.3",
     "vitest": "^0.27.2"
   }
 }

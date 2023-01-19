@@ -5,7 +5,7 @@ import * as dbHandler from 'testcontainers-mongoose'
 export async function connectMockDb() {
     await dbHandler.connect();
     const connectionString = dbHandler.getMongodbConnectionString();
-
+    console.log(connectionString);
     set('strictQuery', true);
     await mongoConnection(connectionString);
 }

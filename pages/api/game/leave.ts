@@ -13,7 +13,8 @@ const gc = new Storage({
 
 const imgBucket = gc.bucket('trial-by-fire');
 
-export async function leaveRoom(body: LeaveRoomBody) {
+export async function leaveRoom(body?: LeaveRoomBody) {
+    if (!body || !body.gameCode || !body.id ) throw 400;
     // Get the players image url and delete
     const imageURL = await getPlayerImage(body.gameCode, body.id);
     if (imageURL) {
@@ -22,7 +23,7 @@ export async function leaveRoom(body: LeaveRoomBody) {
 
     const updated = await Game.findOneAndUpdate({ code: body.gameCode }, { $pull: { players: { _id: body.id } } }, { new: true });
 
-    if (!updated) return;
+    if (!updated) throw 404;
 
     const io = getServerSocket();
 
@@ -40,10 +41,14 @@ async function handler(
             deleteCookie('room-id', { req, res });
             res.status(200);
         } catch (e: unknown) {
-            res.status(400);
+            if (Number.isFinite(e)) res.status(e as number);
+            else res.status(400);
         } finally {
             res.end();
         }
+    } else {
+        res.status(405);
+        res.end();
     }
 }
 
