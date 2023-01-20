@@ -90,6 +90,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
+      - name: Git config
+        run: |
+          git config --global user.email "michael.bruty@students.plymouth.ac.uk"
+          git config --global user.name "mbruty"
       - name: Bump version number
         run: |
           npm run patch
