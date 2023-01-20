@@ -1,4 +1,4 @@
-import mongoose, { connect } from 'mongoose';
+import mongoose from 'mongoose';
 /*
 * Connects to mongodb
 * @param  connectionString - The connection string to use, used for connecting to test databases. Pass nothing to use the default connection
@@ -16,11 +16,12 @@ async function connectDb(connectionString = '') {
     if (!global.db) {
         if (connectionString) {
             mongoose.set('strictQuery', true);
-            await connect(connectionString);
+            await mongoose.connect(connectionString);
         }
 
         else {
-            await connect(process.env.MONGO_CONNECTION_STRING || '')
+            mongoose.set('strictQuery', true);
+            await mongoose.connect(process.env.MONGO_CONNECTION_STRING || '')
         }
         // eslint-disable-next-line
         // @ts-ignore
