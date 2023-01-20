@@ -100,9 +100,9 @@ jobs:
       - name: Lowercase REPO
         run: |
           echo "REPO=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
-      - name: Get version number
-        run: |
-          echo "TAG_NUMER=$(awk -F'"' '/"version": ".+"/{ print $4; exit; }' package.json)" >> $GITHUB_ENV
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
       - name: Build and push Docker image
         uses: docker/build-push-action@v3.2.0
         with:
@@ -110,7 +110,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO }}/trial-by-fire:latest
-            ghcr.io/${{ env.REPO }}/trial-by-fire:${{ env.TAG_NUMBER }}
+            ghcr.io/${{ env.REPO }}/trial-by-fire:${{ steps.package-version.outputs.current-version }}
       - name: Create tag
         uses: actions/github-script@v5
         with:
@@ -118,6 +118,6 @@ jobs:
             github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'refs/tags/${{ env.TAG_NUMBER }}',
+              ref: 'refs/tags/${{ steps.package-version.outputs.current-version }}',
               sha: context.sha
             })
