@@ -1,12 +1,12 @@
 import mongoConnection from '../../database/mongoConnection';
-import { set } from 'mongoose';
 import * as dbHandler from 'testcontainers-mongoose'
+import mongoose from 'mongoose';
 
 export async function connectMockDb(printConnectionString = false) {
     await dbHandler.connect();
     const connectionString = dbHandler.getMongodbConnectionString();
     if (printConnectionString) console.log(connectionString);
-    set('strictQuery', true);
+    mongoose.set('strictQuery', false);
     await mongoConnection(connectionString);
 }
 
