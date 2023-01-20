@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { expect, test, vi } from 'vitest'
 import { getServerSideProps } from 'pages/game/index';
