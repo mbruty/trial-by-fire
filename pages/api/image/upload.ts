@@ -15,6 +15,8 @@ const gc = new Storage({
 const imgBucket = gc.bucket('trial-by-fire');
 
 export async function postImage(body: ImageUploadBody) {
+    if (!body.imageBase64) throw 400;
+
     // Delete the old image if there is one
     const imageURL = await getPlayerImage(body.gameCode, body.userId);
     if (imageURL) {
@@ -45,7 +47,7 @@ export async function postImage(body: ImageUploadBody) {
 
     if (!updated) return;
     const io = getServerSocket();
-
+        console.log(JSON.stringify(updated.players));
     io.to(updated.code).emit('userUpdate', JSON.stringify(updated.players));
 }
 
@@ -54,12 +56,18 @@ async function handler(
     res: NextApiResponse
 ) {
     if (req.method == 'POST') {
-        await postImage(req.body).catch(e => { console.log(e); res.status(400) });
-        res.status(200);
-        return res.end();
+        try {
+            await postImage(req.body);
+            res.status(200);
+        } catch (e) {
+            console.log(e);
+            res.status(400);
+        }
+        res.end();
+    } else {
+        res.status(405);
+        res.end()
     }
-    res.status(405);
-    res.end()
 }
 
 export default handler;

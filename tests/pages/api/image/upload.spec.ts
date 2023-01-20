@@ -2,12 +2,13 @@
 
 import { connectMockDb, disconnectMockDb } from 'tests/utils/setupDatabase';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest'
-import handler from 'pages/api/game/leave';
+import handler from 'pages/api/image/upload';
 import Game from 'database/models/game';
 import mockResponse from 'tests/utils/mockResponse';
 import { Types } from 'mongoose';
-import { bucket, file, _delete } from '__mocks__/@google-cloud/storage';
+import { file, save, _delete } from '__mocks__/@google-cloud/storage';
 import { emit, to } from 'sockets/__mocks__/getServerSocket';
+import { uuidstring } from '__mocks__/uuid';
 
 let gameId: string | Types.ObjectId;
 let playerId: string | Types.ObjectId;
@@ -16,6 +17,9 @@ let secondPlayerId: string | Types.ObjectId;
 vi.mock('cookies-next');
 vi.mock('@google-cloud/storage');
 vi.mock('sockets/getServerSocket');
+vi.mock('uuid');
+
+const imageBase64 = 'data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAoAAAANVCAYAAADoSU8LAAAgAElEQVR4Xuy';
 
 // Connect to the mock db
 beforeAll(async () => {
@@ -52,12 +56,7 @@ beforeEach(async () => {
 afterEach(async () => {
     vi.clearAllMocks();
     await Game.deleteMany({});
-});
-
-// Has to be ran first else the mocks would have been cleared as these functions run when the file loads
-test('GoogleCloud Storage is initalised', () => {
-    expect(bucket).toHaveBeenCalledWith('trial-by-fire');
-});
+})
 
 test('Api route returns a 405 for get', async () => {
     const req: any = { method: 'GET' };
@@ -89,8 +88,8 @@ test('Api route returns a 405 for delete', async () => {
     expect(res.end).toBeCalledTimes(1);
 });
 
-test('Api route returns a 400 with empty body', async () => {
-    const req: any = { method: 'POST', body: {} };
+test('Api throws 400 if no image is provided', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString() } };
     const res = mockResponse;
     await handler(req, res as any);
 
@@ -99,74 +98,84 @@ test('Api route returns a 400 with empty body', async () => {
     expect(res.end).toBeCalledTimes(1);
 });
 
-test('Api route returns a 400 without id', async () => {
-    const req: any = { method: 'POST', body: { gameCode: '123' } };
+test('Api deletes previous image if present', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString(), imageBase64 } };
     const res = mockResponse;
     await handler(req, res as any);
 
-    expect(res.status).toBeCalledTimes(1);
-    expect(res.status).toBeCalledWith(400);
-    expect(res.end).toBeCalledTimes(1);
-}); 4
-
-test('Api route returns a 400 without game code', async () => {
-    const req: any = { method: 'POST', body: { id: playerId.toString() } };
-    const res = mockResponse;
-    await handler(req, res as any);
-
-    expect(res.status).toBeCalledTimes(1);
-    expect(res.status).toBeCalledWith(400);
-    expect(res.end).toBeCalledTimes(1);
-});
-
-test('Api route returns a 404 if no player exsists', async () => {
-    const req: any = { method: 'POST', body: { id: playerId.toString(), gameCode: '1234' } };
-    const res = mockResponse;
-
-    await Game.create({
-        code: '1233',
-        startingBalance: 100,
-    });
-
-    await handler(req, res as any);
-
-    expect(res.status).toBeCalledTimes(1);
-    expect(res.status).toBeCalledWith(404);
-    expect(res.end).toBeCalledTimes(1);
-});
-
-test('Api deletes image from gcp', async () => {
-    const req: any = { method: 'POST', body: { id: playerId.toString(), gameCode: '123' } };
-    const res = mockResponse;
-
-    await handler(req, res as any);
-    expect(file).toBeCalledTimes(1);
-    expect(file).toHaveBeenCalledWith('test.jpg');
+    expect(file).toBeCalledTimes(2);
+    expect(file).toBeCalledWith('test.jpg');
     expect(_delete).toBeCalledTimes(1);
 });
 
-test('Api removes player from database', async () => {
-    const req: any = { method: 'POST', body: { id: playerId.toString(), gameCode: '123' } };
+test('Api does not delete any images when not present', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString(), imageBase64 } };
+    const res = mockResponse;
+
+    const game = await Game.findById(gameId);
+    if (!game) throw 'Game was not found, there is an error in beforeEach';
+
+    game.players[0].imageURL = undefined;
+    await game.save();
+
+    await handler(req, res as any);
+
+    expect(file).toBeCalledTimes(1);
+    expect(_delete).toBeCalledTimes(0);
+});
+
+test('Api uploads image', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString(), imageBase64 } };
+    const res = mockResponse;
+
+    await handler(req, res as any);
+
+    expect(file).toBeCalledTimes(2);
+    expect(file).toHaveBeenLastCalledWith(uuidstring + '.jpg');
+});
+
+test('Api updates player with new image', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString(), imageBase64 } };
     const res = mockResponse;
 
     await handler(req, res as any);
 
     const game = await Game.findById(gameId);
-
-    if (!game) throw 'Game was null, there is an error in the before each function';
-
-    expect(game.players).toHaveLength(1);
-    expect(game.players[0]._id.toString()).toBe(secondPlayerId.toString());
+    expect(game).toBeDefined();
+    const player = game?.players.find(x => x._id.toString() == playerId.toString());
+    expect(player).toBeDefined();
+    expect(player?.imageURL).toBeDefined();
+    expect(player?.imageURL).toBe(uuidstring + '.jpg');
 });
 
-test('Api sends a message to the room with the updated players', async () => {
-    const req: any = { method: 'POST', body: { id: playerId.toString(), gameCode: '123' } };
+test('Api catches errors throw by gcp bucket save', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString(), imageBase64 } };
+    const res = mockResponse;
+
+    save.mockImplementationOnce((_0, callback: (err: string) => void) => {
+        callback('it ain\'t work');
+    });
+
+    await handler(req, res as any);
+
+    const game = await Game.findById(gameId);
+
+    expect(res.status).toBeCalledWith(400);
+
+    // Check that the game hasn't been changed
+    expect(game).toBeDefined();
+    expect(game?.__v).toBe(0);
+});
+
+test('Api sends socket update once image saved', async () => {
+    const req: any = { method: 'POST', body: { gameCode: '123', userId: playerId.toString(), imageBase64 } };
     const res = mockResponse;
 
     await handler(req, res as any);
-    const expected = `[{"name":"test2","imageURL":"test2.jpg","beanBalance":0,"isRemote":true,"currentBid":0,"_id":"${secondPlayerId.toString()}"}]`
+
     expect(to).toBeCalledTimes(1);
     expect(to).toBeCalledWith('123');
     expect(emit).toBeCalledTimes(1);
+    const expected = `[{"name":"test","imageURL":"${uuidstring}.jpg","beanBalance":0,"isRemote":true,"currentBid":0,"_id":"${playerId.toString()}"},{"name":"test2","imageURL":"test2.jpg","beanBalance":0,"isRemote":true,"currentBid":0,"_id":"${secondPlayerId.toString()}"}]`;
     expect(emit).toBeCalledWith('userUpdate', expected);
 });
