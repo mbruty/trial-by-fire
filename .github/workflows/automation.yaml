@@ -1,0 +1,35 @@
+
+name: Test, build, and deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # I used the yarn package manager, so use that to keep consistent with the lock files
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # yarn install
+      - name: Run linting
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: lint
+      - name: Run tests
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test
