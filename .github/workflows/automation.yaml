@@ -91,12 +91,14 @@ jobs:
         with:
           node-version: 18
       - name: Bump version number
-        run: npm run patch
+        run: |
+          npm run patch
       - name: Lowercase REPO
         run: |
           echo "REPO=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
       - name: Get version number
-        run: echo "TAG_NUMER=$(awk -F'"' '/"version": ".+"/{ print $4; exit; }' package.json)" >> $GITHUB_ENV
+        run: |
+          echo "TAG_NUMER=$(awk -F'"' '/"version": ".+"/{ print $4; exit; }' package.json)" >> $GITHUB_ENV
       - name: Build and push Docker image
         uses: docker/build-push-action@v3.2.0
         with:
