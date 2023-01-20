@@ -5,9 +5,11 @@ import { getServerSideProps } from '../../../pages/game/rejoin';
 import { ContextWithCookies } from '../../../types/ContextWithCookies';
 import Game from '../../../database/models/game';
 import { Types } from 'mongoose';
-
+import Rejoin from 'pages/game/rejoin';
+import { render } from '@testing-library/react';
 vi.mock('cookies-next');
-
+vi.mock('next/router');
+vi.mock('next/head');
 
 let roomId: string | Types.ObjectId;
 let playerId: string | Types.ObjectId;
@@ -95,4 +97,15 @@ test('getServerSideProps provides correct data', async () => {
     expect(result.playerName).toBe('test');
     expect(result.image).toBeDefined();
     expect(result.image).toBe('https://storage.googleapis.com/trial-by-fire/test.jpg');
+});
+
+test('Page sets title', async () => {
+    // We can assume that get serverside props is working here & feed it to the component
+    const context: ContextWithCookies = { req: { cookies: {} } };
+    context.req.cookies['room-id'] = roomId.toString();
+    context.req.cookies['id'] = playerId.toString();
+    const result: any = await getServerSideProps(context as any);
+    render(<Rejoin {...result.props}/>, { container: document.head });
+
+    expect(document.title).toBe('Trials by fire - Rejoin');
 });

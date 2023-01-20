@@ -47,7 +47,6 @@ export async function postImage(body: ImageUploadBody) {
 
     if (!updated) return;
     const io = getServerSocket();
-        console.log(JSON.stringify(updated.players));
     io.to(updated.code).emit('userUpdate', JSON.stringify(updated.players));
 }
 
@@ -60,7 +59,6 @@ async function handler(
             await postImage(req.body);
             res.status(200);
         } catch (e) {
-            console.log(e);
             res.status(400);
         }
         res.end();

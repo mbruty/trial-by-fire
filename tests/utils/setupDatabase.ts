@@ -2,10 +2,10 @@ import mongoConnection from '../../database/mongoConnection';
 import { set } from 'mongoose';
 import * as dbHandler from 'testcontainers-mongoose'
 
-export async function connectMockDb() {
+export async function connectMockDb(printConnectionString = false) {
     await dbHandler.connect();
     const connectionString = dbHandler.getMongodbConnectionString();
-    console.log(connectionString);
+    if (printConnectionString) console.log(connectionString);
     set('strictQuery', true);
     await mongoConnection(connectionString);
 }

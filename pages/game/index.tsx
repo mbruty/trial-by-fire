@@ -94,18 +94,18 @@ const IndexPage: FC = () => {
                 <VStack className={styles.container} spacing='1rem'>
                     <Heading as='h1'>Join a game</Heading>
                     <label htmlFor='game-code'>Game Code</label>
-                    <Input pattern='\d*' type='text' id='game-code' value={data.gameCode} onChange={e => update({ ...data, gameCode: e.target.value })} />
+                    <Input pattern='\d*' type='text' data-testid='game-code' id='game-code' value={data.gameCode} onChange={e => update({ ...data, gameCode: e.target.value })} />
                     {errors.gameCode && errors.gameCode.split('\n').map((x, idx) => (
                         <p key={idx} className='error'>{x}</p>
                     ))}
-                    <label htmlFor='game-code'>Name <span className={styles['not-bold']}>(max 12)</span></label>
-                    <Input type='text' id='game-code' value={data.name} onChange={e => update({ ...data, name: e.target.value })} />
+                    <label htmlFor='name'>Name <span className={styles['not-bold']}>(max 12)</span></label>
+                    <Input type='text' data-testid='name' id='name' value={data.name} onChange={e => update({ ...data, name: e.target.value })} />
                     {errors.name && <p className='error'>{errors.name}</p>}
                     <p>Are you in-person or remote?</p>
                     <form className={styles['radio-container']}>
-                        <input checked={!data.isRemote} type='radio' id='in-person' name='radio' onChange={() => update({ ...data, isRemote: false })} />
+                        <input checked={!data.isRemote} type='radio' data-testid='in-person' id='in-person' name='radio' onChange={() => update({ ...data, isRemote: false })} />
                         <label className={styles['border-right']} htmlFor='in-person'>In person</label>
-                        <input checked={data.isRemote} type='radio' id='remote' name='radio' onChange={() => update({ ...data, isRemote: true })} />
+                        <input checked={data.isRemote} type='radio' data-testid='remote' id='remote' name='radio' onChange={() => update({ ...data, isRemote: true })} />
                         <label className={styles['border-left']} htmlFor='remote'>Remote</label>
                         {errors.isRemote && <p className='error'>{errors.isRemote}</p>}
                     </form>

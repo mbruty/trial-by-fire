@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { connectMockDb, disconnectMockDb } from 'tests/utils/setupDatabase';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest'
-import { getServerSideProps } from '../../../pages/game/setup';
-import { ContextWithCookies } from '../../../types/ContextWithCookies';
-import Game from '../../../database/models/game';
+import { getServerSideProps } from 'pages/game/setup';
+import { ContextWithCookies } from 'types/ContextWithCookies';
+import Game from 'database/models/game';
 import { Types } from 'mongoose';
-
 vi.mock('cookies-next');
+vi.mock('next/router');
+vi.mock('next/head');
+vi.mock('axios');
 
 let roomId: string | Types.ObjectId;
 let playerId: string | Types.ObjectId;
@@ -168,4 +170,4 @@ test('getServerSideProps returns the correct props', async () => {
         }]
     });
 
-})
+});

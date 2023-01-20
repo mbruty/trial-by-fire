@@ -9,6 +9,7 @@ import React, { FC } from 'react';
 import Game from 'database/models/game';
 import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
 import styles from './setup.module.scss';
+import Head from 'next/head';
 
 type Props = {
     gameState: string;
@@ -36,6 +37,10 @@ const SetupPage: FC<Props> = (props) => {
 
     return (
         <div className={styles.main}>
+            <Head>
+                <title>Trials by fire - Rejoin</title>
+                <link rel="icon" href="/favicon.ico" />
+            </Head>
             <VStack className={styles.container} spacing='1rem'>
                 <Heading as='h1'>Oops, it looks like you&apos;ve disconnected from your game</Heading>
                 <p>
@@ -43,7 +48,7 @@ const SetupPage: FC<Props> = (props) => {
                     Name: {props.playerName}<br />
                     RoomCode: {props.gameCode}<br />
                 </p>
-                {props.image && <Image src={props.image} alt='Your last game&apos;s image' />}
+                {props.image && <Image src={props.image} alt='Your last game&apos;s image' height={400} width={400} />}
                 <HStack spacing='1rem'>
                     <Button colorScheme='teal' onClick={rejoin}>Rejoin</Button>
                     <Button colorScheme='teal' onClick={newGame}>New game</Button>
