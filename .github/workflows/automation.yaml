@@ -1,0 +1,123 @@
+
+name: Test, build, and deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # I used the yarn package manager, so use that to keep consistent with the lock files
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # yarn install
+      - name: Run linting
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: lint
+      - name: Run tests
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: test
+
+  build:
+    name: Checks project builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # I used the yarn package manager, so use that to keep consistent with the lock files
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # yarn install
+      - name: Run linting
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
+  
+  coverage:
+    name: Generate coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # I used the yarn package manager, so use that to keep consistent with the lock files
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # yarn install
+      - name: Run coverage
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: coverage
+
+  build-container:
+    name: Build Container
+    needs: [test, build]
+    # uncomment me before pusing to main!
+    #if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Log in to GitHub Docker Registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GH_TOKEN }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Git config
+        run: |
+          git config --global user.email "michael.bruty@students.plymouth.ac.uk"
+          git config --global user.name "mbruty"
+      - name: Bump version number
+        run: |
+          npm run patch
+      - name: Lowercase REPO
+        run: |
+          echo "REPO=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@main
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3.2.0
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPO }}/trial-by-fire:latest
+            ghcr.io/${{ env.REPO }}/trial-by-fire:${{ steps.package-version.outputs.current-version }}
+      - name: Create tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.package-version.outputs.current-version }}',
+              sha: context.sha
+            })

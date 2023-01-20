@@ -7,6 +7,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
   test: {
+    hookTimeout: 50000,
     globals: true,
     environment: 'jsdom',
     setupFiles: './tests/utils/setup.ts'
