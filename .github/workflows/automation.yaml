@@ -12,7 +12,7 @@ on:
 
 jobs:
   test:
-    name: Run tests
+    name: Run tests 🧪
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -35,7 +35,7 @@ jobs:
           cmd: test
 
   build:
-    name: Checks project builds
+    name: Checks project builds 🔨
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -54,7 +54,7 @@ jobs:
           cmd: build
   
   coverage:
-    name: Generate coverage report
+    name: Generate coverage report 🧐
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -73,10 +73,9 @@ jobs:
           cmd: coverage
 
   build-container:
-    name: Build Container
+    name: Build Container 📦
     needs: [test, build]
-    # uncomment me before pusing to main!
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -121,3 +120,19 @@ jobs:
               ref: 'refs/tags/${{ steps.package-version.outputs.current-version }}',
               sha: context.sha
             })
+
+  deploy:
+    name: Deploy to vercel 🚀
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
