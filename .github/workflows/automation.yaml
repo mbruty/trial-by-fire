@@ -152,24 +152,8 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ env.REPO }}/trial-by-fire:latest
-            ghcr.io/${{ env.REPO }}/trial-by-fire:${{ steps.package-version.outputs.current-version }}
+            ghcr.io/${{ env.REPO }}/trial-by-fire:${{  github.sha }}
             europe-west1-docker.pkg.dev/${{ secrets.PROJECT_ID }}/trial-by-fire/next:${{  github.sha }}
-      - name: Create tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ steps.package-version.outputs.current-version }}',
-              sha: context.sha
-            })
-      - name: Commit version update
-        uses: EndBug/add-and-commit@v7
-        with:
-          message: "[ci skip] Bump version number"
-          committer_name: GitHub Actions
-          committer_email: 41898282+github-actions[bot]@users.noreply.github.com
 
   deploy:
     name: Deploy to cloud run
