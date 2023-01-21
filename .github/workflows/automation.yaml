@@ -81,7 +81,7 @@ jobs:
     name: Deploy coverage report to github pages 🚀
     runs-on: ubuntu-latest
     needs: coverage
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
@@ -95,7 +95,7 @@ jobs:
   build-container:
     name: Build Container 📦
     needs: [test, build]
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
