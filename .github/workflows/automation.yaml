@@ -75,7 +75,7 @@ jobs:
   build-container:
     name: Build Container 📦
     needs: [test, build]
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -102,6 +102,14 @@ jobs:
       - name: get-npm-version
         id: package-version
         uses: martinbeentjes/npm-get-version-action@main
+      - name: Setup Cloud cli
+        uses: google-github-actions/setup-gcloud@v0.2.0
+        with:
+          project_id: ${{ secrets.PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+      - name: Authorize Docker push
+        run: gcloud auth configure-docker
       - name: Build and push Docker image
         uses: docker/build-push-action@v3.2.0
         with:
@@ -110,6 +118,7 @@ jobs:
           tags: |
             ghcr.io/${{ env.REPO }}/trial-by-fire:latest
             ghcr.io/${{ env.REPO }}/trial-by-fire:${{ steps.package-version.outputs.current-version }}
+            europe-west2-docker.pkg.dev/${{ secrets.PROJECT_ID }}/trial-by-fire/next
       - name: Create tag
         uses: actions/github-script@v5
         with:
@@ -122,7 +131,7 @@ jobs:
             })
 
   deploy:
-    name: Deploy to vercel 🚀
+    name: Deploy to cloud run
     needs: [test, build]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
