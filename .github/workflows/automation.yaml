@@ -71,6 +71,26 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: coverage
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage
+  
+  deploy-coverage:
+    name: Deploy coverage report to github pages 🚀
+    runs-on: ubuntu-latest
+    needs: coverage
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: coverage-report
+      - name: Push to github pages
+        run: |
+          ls
+    
 
   build-container:
     name: Build Container 📦
