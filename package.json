@@ -1,14 +1,15 @@
 {
   "name": "trial-by-fire",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint ./",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "patch": "npm version patch"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.0.13",
