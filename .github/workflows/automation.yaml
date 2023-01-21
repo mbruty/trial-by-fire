@@ -55,6 +55,7 @@ jobs:
   
   coverage:
     name: Generate coverage 🧐
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -88,7 +89,7 @@ jobs:
     environment:
       name: coverage-report
       url: ${{ steps.deployment.outputs.page_url }}
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v3
@@ -109,7 +110,7 @@ jobs:
   build-container:
     name: Build Container 📦
     needs: [test, build]
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -176,7 +177,7 @@ jobs:
     environment:
       name: coverage-report
       url: ${{ steps.deploy.outputs.url }}
-    # if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
     - name: Setup Cloud cli
