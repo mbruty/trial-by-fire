@@ -175,7 +175,7 @@ jobs:
     name: Deploy to cloud run
     needs: build-container
     environment:
-      name: coverage-report
+      name: Production
       url: ${{ steps.deploy.outputs.url }}
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
