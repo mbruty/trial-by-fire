@@ -31,7 +31,7 @@ const gameSchema = new Schema({
     code: { type: String, required: true },
     startingBalance: { type: Number, required: true },
     state: { type: String, required: true, default: 'waiting' },
-    currentRound: { type: String, required: true, default: 0 },
+    currentRound: { type: Number, required: true, default: 0 },
     biddingSeconds: { type: Number, required: true, default: 30 },
     bidStartedTimeStamp: { type: Number, required: false },
     players: [{

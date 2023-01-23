@@ -37,7 +37,7 @@ const RoundStart: FC<Props> = ({ players, roundTitle, onStartRoundClick }) => {
         }
     }, [])
 
-    const sorted = players.sort((a, b) => a.beanBalance - b.beanBalance);
+    const sorted = players.sort((a, b) => b.beanBalance - a.beanBalance);
 
     return (
         <div className={styles.main}>

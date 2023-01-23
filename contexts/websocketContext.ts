@@ -22,12 +22,17 @@ export class SocketObservable {
         start: false,
         state: false,
         bid: false,
+        bidError: false,
+        bidSuccess: false
     };
 
     private onUserUpdateSubscribers: Array<OnUbpdateObject<Array<GameUser>>> = [];
     private onStartSubscribers: Array<OnUbpdateObject<string>> = [];
     private onStateSubscribers: Array<OnUbpdateObject<RoundState>> = [];
     private onBidSubscribers: Array<OnUbpdateObject<number>> = [];
+    private onBidErrorSubscribers: Array<OnUbpdateObject<string>> = [];
+    private onBidSuccessSubscribers: Array<OnUbpdateObject<number>> = [];
+    private onceConnectedFuncs: Array<() => void> = [];
     private gameId = '';
 
     constructor() {
@@ -42,6 +47,7 @@ export class SocketObservable {
         this.socket.on('joined', data => {
             const game: IGame = JSON.parse(data);
             this.gameId = game._id as string;
+            this.onceConnectedFuncs.forEach(x => x());
         })
 
         // Bind the socket functions to 'this' scope
@@ -50,10 +56,16 @@ export class SocketObservable {
         this.onStart = this.onStart.bind(this);
         this.onState = this.onState.bind(this);
         this.onBid = this.onBid.bind(this);
+        this.onBidError = this.onBidError.bind(this);
+        this.onBidSuccess = this.onBidSuccess.bind(this);
     }
 
     public getGameId() {
         return this.gameId;
+    }
+
+    public onceConnected(cb: () => void) {
+        this.onceConnectedFuncs.push(cb);
     }
 
     // #region Client to server events
@@ -102,9 +114,43 @@ export class SocketObservable {
         }
     }
 
+    private onBidError(data: string) {
+        this.onBidErrorSubscribers.forEach(x => x.onUpdate(data));
+    }
+
+    private onBidSuccess(data: string) {
+        const value = parseInt(data);
+
+        if (!isNaN(value)) {
+            this.onBidSuccessSubscribers.forEach(x => x.onUpdate(value));
+        }
+    }
+
     // #endregion
 
     // #region Subscriptions
+    public subscribeToBidErrors(cb: OnUpdate<string>): string {
+        if (!this.eventsSubscribedTo.bidError) {
+            this.socket?.on('bidError', this.onBidError);
+            this.eventsSubscribedTo.bidError = true;
+        }
+        const id = uuid();
+
+        this.onBidErrorSubscribers.push({ id, onUpdate: cb });
+        return id;
+    }
+
+    public subscribeToBidSuccess(cb: OnUpdate<number>): string {
+        if (!this.eventsSubscribedTo.bidSuccess) {
+            this.socket?.on('bidSuccess', this.onBidSuccess);
+            this.eventsSubscribedTo.bidError = true;
+        }
+        const id = uuid();
+
+        this.onBidSuccessSubscribers.push({ id, onUpdate: cb });
+        return id;
+    }
+
     public subscribeToOnUserUpdate(cb: OnUpdate<Array<GameUser>>): string {
         if (!this.eventsSubscribedTo.userUpdate) {
             this.socket?.on('userUpdate', this.onUserUpdate);
@@ -188,6 +234,26 @@ export class SocketObservable {
         if (this.onBidSubscribers.length === 0) {
             this.socket?.off('newBid', this.onBid);
             this.eventsSubscribedTo.bid = false;
+        }
+    }
+
+    public unsubscribeBidErrors(id: string) {
+        this.onBidErrorSubscribers = this.onBidErrorSubscribers.filter(x => x.id !== id);
+
+        // Stop listening to these events as we don't need them
+        if (this.onBidErrorSubscribers.length === 0) {
+            this.socket?.off('bidError', this.onBidError);
+            this.eventsSubscribedTo.bidError = false;
+        }
+    }
+
+    public unsubscribeBidSuccess(id: string) {
+        this.onBidSuccessSubscribers = this.onBidSuccessSubscribers.filter(x => x.id !== id);
+
+        // Stop listening to these events as we don't need them
+        if (this.onBidSuccessSubscribers.length === 0) {
+            this.socket?.off('bidSuccess', this.onBidError);
+            this.eventsSubscribedTo.bidSuccess = false;
         }
     }
     // #endregion

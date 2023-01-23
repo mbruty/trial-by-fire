@@ -9,16 +9,14 @@ async function startGame(message: string) {
         state: data.state
     }
 
+    const game = await Game.findByIdAndUpdate(data.gameId, updateObject, { new: true });
     if (data.state === 'bidding') {
-        updateObject.bidStartedTimeStamp = Date.now();
-        const game = await Game.findById(data.gameId);
         if (game) {
+            game.bidStartedTimeStamp = Date.now();
             game.players.forEach(x => x.currentBid = 0);
             await game.save();
         }
     }
-
-    const game = await Game.findByIdAndUpdate(data.gameId, updateObject, { new: true });
 
 
     if (game) {

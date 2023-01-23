@@ -66,7 +66,7 @@ const NewTrialPage: FC = () => {
             const body: CreateGameBody = { ...formData };
             const response = await axios.post<CreateGameBody, AxiosResponse<CreateGameResponse>>('/api/game/create', body);
             if (response.status === 200) {
-                router.push(`/host/${response.data.gameId}`)
+                router.push(`/host/lobby/${response.data.gameId}`)
             }
         } catch (e) {
             setErrors('There was an issue creating this trial... Try again in a bit ');

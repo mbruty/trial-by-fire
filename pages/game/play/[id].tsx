@@ -34,17 +34,13 @@ const PlayPage: FC<Props> = (props) => {
         }
     }, [socket, props.game.code])
 
-    function onBid(ammount: number) {
-        socket.bid(ammount);       
-    }
-
     if (gameState === RoundState.BIDDING) {
         const title = game.rounds[game.currentRound].title;
         const player = game.players.find(x => x._id === props.playerId);
 
 
 
-        element = <Bid onSubmit={onBid} title={title} beanBalance={player?.beanBalance as number} />
+        element = <Bid title={title} beanBalance={player?.beanBalance as number} />
     }
 
     else {
