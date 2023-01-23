@@ -13,6 +13,7 @@ import RoundBids from 'components/host/RoundBids';
 import { RoundState, stateFromString } from 'types/RoundState';
 import RoundPlay from 'components/host/RoundPlay';
 import axios, { AxiosResponse } from 'axios';
+import Winners from 'components/host/Winners';
 
 
 type GameState = {
@@ -83,7 +84,11 @@ const GamePage: React.FC<Props> = (props: Props) => {
 
     let element: JSX.Element = <></>;
     let roundText = '';
-    if (gameState.roundState === RoundState.STARTING) {
+    if (gameData.currentRound === gameData.rounds.length) {
+        roundText = 'Winners';
+        element = <Winners players={gameData.players} />
+    }
+    else if (gameState.roundState === RoundState.STARTING) {
         roundText = 'Current Scores';
         element = <RoundStart
             onStartRoundClick={onStartRoundClick}
