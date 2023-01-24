@@ -7,12 +7,18 @@ async function handler(
 ) {
     if (req.method === 'GET') {
         try {
-            await connectDb();
-            // Only run this when we're running the test db
-            // This endpoint is only for cypress
-            await connectDb();
-            await Game.deleteMany({});
-            res.status(200);
+            if (process.env.USE_TEST_DB === 'true') {
+
+                await connectDb();
+                // Only run this when we're running the test db
+                // This endpoint is only for cypress
+                await connectDb();
+                await Game.deleteMany({});
+                res.status(200);
+            } else {
+                throw 404
+            }
+
         } catch (e: unknown) {
             res.status(e as number);
         } finally {

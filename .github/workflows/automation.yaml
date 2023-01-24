@@ -54,6 +54,7 @@ jobs:
           start: npm run test-server
           browser: chrome
           record: false
+          headless: false
           wait-on: 'http://localhost:3000'
           spec: cypress/e2e/*
 
