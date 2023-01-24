@@ -13,6 +13,7 @@ type Props = {
 }
 
 const PlayerImage: FC<Props> = ({ variant, player }) => {
+    if (player === undefined) return null;
     let constraint = 0;
 
     if (variant === 'xs') {
@@ -31,10 +32,9 @@ const PlayerImage: FC<Props> = ({ variant, player }) => {
         constraint = 1024;
     }
 
-    console.log(variant);
 
     return (
-        <Card className={styles.card} maxW='sm' variant='elevated'>
+        <Card data-test-id={`player-${player.name}`} className={styles.card} maxW='sm' variant='elevated'>
             <CardHeader className={styles['card-heading']} fontSize='xl'>{player.name}</CardHeader>
             <StackDivider />
             <Image

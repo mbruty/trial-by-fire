@@ -34,6 +34,28 @@ jobs:
         with:
           cmd: test
 
+  test-e2e:
+    name: Run e2e 🧪
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      # I used the yarn package manager, so use that to keep consistent with the lock files
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install # yarn install
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm run test-server
+          browser: chrome
+          headless: true
+          record: true
+
   build:
     name: Checks project builds 🔨
     runs-on: ubuntu-latest
@@ -109,7 +131,7 @@ jobs:
 
   build-container:
     name: Build Container 📦
-    needs: [test, build]
+    needs: [test, build, test-e2e]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:

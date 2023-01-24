@@ -7,7 +7,7 @@ async function startGame(message: string) {
     const data: { code: string; gameId: string } = JSON.parse(message);
 
     if (!isObjectIdOrHexString(data.gameId)) return;
-    const result = await Game.findByIdAndUpdate(data.gameId, { state: 'playing' });
+    const result = await Game.findByIdAndUpdate(data.gameId, { state: 'starting' });
     if (!result) return;
     io.to(data.code).emit('start', data.gameId);
 }

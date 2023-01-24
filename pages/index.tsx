@@ -22,7 +22,7 @@ export default function Home() {
         </p>
 
         <div className={styles.grid}>
-          <Link href="/host/new" className={styles.card}>
+          <Link id='new' href="/host/new" className={styles.card}>
             <h2>Create a new game &rarr;</h2>
             <p>Create a game, and create every round</p>
           </Link>

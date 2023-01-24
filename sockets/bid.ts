@@ -4,6 +4,7 @@ import { Socket } from 'socket.io';
 import getServerSocket from 'sockets/getServerSocket';
 
 async function bid(message: string, socket: Socket) {
+    console.log(message);
     // Get the date before doing any API calls to ensure that it is accurately recorded
     const now = Date.now();
     const io = getServerSocket();

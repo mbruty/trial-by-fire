@@ -64,7 +64,7 @@ const Camera: React.FC<CameraProps> = (props) => {
                 ) : (
                     // We can't use Next/Image as it's a local base64 encoded image
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={picture}  alt='Your picture'/>
+                    <img src={picture} alt='Your picture' />
                 )}
             </div>
             <div>
@@ -81,6 +81,7 @@ const Camera: React.FC<CameraProps> = (props) => {
                             Retake
                         </Button>
                         <Button
+                            id='save'
                             colorScheme='whatsapp'
                             disabled={props.isSaved}
                             onClick={(e) => {

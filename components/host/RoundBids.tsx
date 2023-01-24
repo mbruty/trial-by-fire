@@ -88,7 +88,7 @@ const RoundBids: FC<Props> = ({ currentRound, game, onNext }) => {
 
                 {errors && <p className='error'>{errors}</p>}
 
-                <Button onClick={onNext} colorScheme='teal' disabled={timeLeft !== 0}>Continue</Button>
+                <Button onClick={onNext} colorScheme='teal' disabled={timeLeft !== 0 && topBids.length < 2}>Continue</Button>
                 {timeLeft === 0 && (
                     <>
                         <Box style={{ marginTop: '1rem' }} className='container' borderRadius='md' borderColor='white' borderWidth='thin'>

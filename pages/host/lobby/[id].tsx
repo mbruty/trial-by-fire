@@ -43,14 +43,14 @@ const GamePage: React.FC<Props> = (props: Props) => {
     return (
         <VStack className={styles.main}>
             <Heading as='h1'>Waiting for players to join...</Heading>
-            <Text fontSize='2xl'>Join code: {gameData.code}</Text>
+            <Text id='code' fontSize='2xl'>Join code: {gameData.code}</Text>
             <div className={styles.content}>
                 {gameData.players.map(item => (
                     <PlayerImage key={item._id as string} variant='md' player={item} />
                 ))}
             </div>
             <Center>
-                <Button onClick={start} colorScheme='teal'>Start Game</Button>
+                <Button id='start' onClick={start} colorScheme='teal'>Start Game</Button>
             </Center>
         </VStack>
     )

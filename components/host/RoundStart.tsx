@@ -59,7 +59,7 @@ const RoundStart: FC<Props> = ({ players, roundTitle, onStartRoundClick }) => {
                             </Thead>
                             <Tbody>
                                 {sorted.map(x => (
-                                    <Tr key={x._id as string}>
+                                    <Tr data-test-id={x.name} key={x._id as string}>
                                         <Td>
                                             <HStack>
                                                 {x.imageURL &&

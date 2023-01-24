@@ -83,6 +83,7 @@ export class SocketObservable {
 
     public bid(ammount: number) {
         const userId = getCookie('id');
+        alert(JSON.stringify({ ammount, userId, gameId: this.gameId }))
         this.socket?.emit('bid', JSON.stringify({ ammount, userId, gameId: this.gameId }))
     }
 
@@ -95,6 +96,7 @@ export class SocketObservable {
     }
 
     private onStart(data: string) {
+        alert('start')
         this.onStartSubscribers.forEach(x => x.onUpdate(data));
     }
 
