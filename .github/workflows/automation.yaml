@@ -53,8 +53,9 @@ jobs:
         with:
           start: npm run test-server
           browser: chrome
-          headless: true
-          record: true
+          record: false
+          wait-on: 'http://localhost:3000'
+          spec: cypress/e2e/*
 
   build:
     name: Checks project builds 🔨
