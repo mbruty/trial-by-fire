@@ -54,7 +54,7 @@ jobs:
           start: npm run test-server
           browser: chrome
           record: false
-          headless: false
+          headed: true
           wait-on: 'http://localhost:3000'
           spec: cypress/e2e/*
 
@@ -72,7 +72,7 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install # yarn install
-      - name: Run linting
+      - name: Run build
         uses: borales/actions-yarn@v4
         with:
           cmd: build

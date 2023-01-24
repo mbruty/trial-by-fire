@@ -1,4 +1,4 @@
-import WebRtcContext from 'contexts/webRtcContext';
+import WebRtcContext from 'contexts/WebRtcContext';
 import { useContext } from 'react';
 
 function useRtc() {
