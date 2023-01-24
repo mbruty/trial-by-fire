@@ -109,7 +109,7 @@ jobs:
 
   build-container:
     name: Build Container 📦
-    needs: [test, build, test-e2e]
+    needs: [test, build]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
