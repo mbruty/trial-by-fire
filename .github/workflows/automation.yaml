@@ -37,6 +37,7 @@ jobs:
   test-e2e:
     name: Run e2e 🧪
     runs-on: ubuntu-latest
+    container: cypress/browsers:node12.13.0-chrome78-ff70
     steps:
       - name: Checkout
         uses: actions/checkout@v3
