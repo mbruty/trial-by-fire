@@ -5,10 +5,6 @@ import { IGame } from 'database/models/game';
 let game: IGame | undefined;
 
 describe('Host integration tests', () => {
-  before(async () => {
-    await fetch('http://localhost:3000/api/tests/dropAll');
-  })
-
   beforeEach(async () => {
     const response = await fetch('/api/games');
     const games = await response.json();
