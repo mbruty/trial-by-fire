@@ -18,7 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
     // @ts-ignore
     window.Cypress.ws = ws;
   }, [ws]);
-  
+
   useEffect(() => {
     // Only setup the webrtc connection on the client side
     setWebRtcConnection(new WebRtcConnection());

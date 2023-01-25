@@ -10,6 +10,7 @@ import useOrangeBackground from 'hooks/useOrangeBackground';
 import useSocket from 'hooks/useSocket';
 import { RoundState, stateFromString } from 'types/RoundState';
 import styles from './[id].module.scss';
+import useRtc from 'hooks/useRtc';
 
 type Props = {
     game: IGame;
@@ -20,7 +21,23 @@ const PlayPage: FC<Props> = (props) => {
     const [gameState, setGameState] = useState(stateFromString(props.game.state));
     const game = props.game;
     const socket = useSocket();
+    const rtcConnection = useRtc();
     useOrangeBackground();
+
+    useEffect(() => {
+        if (!rtcConnection) return;
+        rtcConnection.start().then(() => {
+            rtcConnection.joinCall(props.game._id.toString(), props.playerId);
+        })
+
+        const id = socket.subscribeToNewOffer((candidate) => {
+            rtcConnection.newCandidate(candidate);
+        })
+
+        return () => {
+            socket.unsubscribeNewOffer(id);
+        }
+    }, [rtcConnection, props.game._id, socket, props.playerId]);
 
     let element: JSX.Element = <></>;
 
@@ -75,7 +92,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         }
     }
 
-    const game = await Game.findById(new Types.ObjectId(objId), { '_id': 0, 'rounds._id': 0, }).lean();
+    const game = await Game.findById(new Types.ObjectId(objId), { 'rounds._id': 0, }).lean();
 
     if (!game) {
         return {
@@ -87,6 +104,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 
     game.players.forEach(x => { x._id = x._id.toString() })
+    game._id = game._id.toString();
 
     if (game.state === 'waiting') {
         return {

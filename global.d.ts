@@ -9,6 +9,9 @@ declare global {
         newBid: (data: string) => void;
         bidError: (data: string) => void;
         bidSuccess: (data: string) => void;
+        answer: (data: string) => void;
+        newOfferCandidate: (data: string) => void;
+        newAnswerCandidate: (data: string) => void;
     }
 
     declare interface ClientToServerEvents {
@@ -59,6 +62,23 @@ declare global {
     declare interface CreateGameResponse {
         code: string;
         gameId: string;
+    }
+
+    declare interface CreateCallBody {
+        playerId: string;
+        gameId: string;
+        sdp: string;
+        type: string;
+        isHost: boolean;
+    }
+
+    declare interface AddCandidateBody {
+        gameId: string;
+        candidate: string;
+        sdpMLineIndex: number;
+        sdpMid: string;
+        usernameFragment: string;
+        isHost: boolean;
     }
     // endregion
 }

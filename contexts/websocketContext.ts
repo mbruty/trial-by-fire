@@ -5,10 +5,11 @@ import { v4 as uuid } from 'uuid';
 import { Socket } from 'socket.io';
 import { RoundState, stateFromString } from '../types/RoundState';
 import { getCookie } from 'cookies-next';
+import { Candidate, Offer } from 'database/models/iceCalls';
 
 type OnUpdate<T> = (data: T) => void;
 
-type OnUbpdateObject<T> = {
+type OnUpdateObject<T> = {
     id: string;
     onUpdate: OnUpdate<T>;
 }
@@ -23,16 +24,22 @@ export class SocketObservable {
         state: false,
         bid: false,
         bidError: false,
-        bidSuccess: false
+        bidSuccess: false,
+        newOffer: false,
+        newAnswer: false,
+        answer: false,
     };
 
-    private onUserUpdateSubscribers: Array<OnUbpdateObject<Array<GameUser>>> = [];
-    private onStartSubscribers: Array<OnUbpdateObject<string>> = [];
-    private onStateSubscribers: Array<OnUbpdateObject<RoundState>> = [];
-    private onBidSubscribers: Array<OnUbpdateObject<number>> = [];
-    private onBidErrorSubscribers: Array<OnUbpdateObject<string>> = [];
-    private onBidSuccessSubscribers: Array<OnUbpdateObject<number>> = [];
+    private onUserUpdateSubscribers: Array<OnUpdateObject<Array<GameUser>>> = [];
+    private onStartSubscribers: Array<OnUpdateObject<string>> = [];
+    private onStateSubscribers: Array<OnUpdateObject<RoundState>> = [];
+    private onBidSubscribers: Array<OnUpdateObject<number>> = [];
+    private onBidErrorSubscribers: Array<OnUpdateObject<string>> = [];
+    private onBidSuccessSubscribers: Array<OnUpdateObject<number>> = [];
     private onceConnectedFuncs: Array<() => void> = [];
+    private onNewOfferSubscribers: Array<OnUpdateObject<Candidate>> = [];
+    private onNewAnswerSubscribers: Array<OnUpdateObject<Candidate>> = [];
+    private onAnswerSubscribers: Array<OnUpdateObject<Offer & { playerId: string }>> = [];
     private gameId = '';
 
     constructor() {
@@ -48,6 +55,9 @@ export class SocketObservable {
             const game: IGame = JSON.parse(data);
             this.gameId = game._id as string;
             this.onceConnectedFuncs.forEach(x => x());
+
+            // Delete all listeners
+            this.onceConnectedFuncs = [];
         })
 
         // Bind the socket functions to 'this' scope
@@ -58,6 +68,9 @@ export class SocketObservable {
         this.onBid = this.onBid.bind(this);
         this.onBidError = this.onBidError.bind(this);
         this.onBidSuccess = this.onBidSuccess.bind(this);
+        this.onAnswer = this.onAnswer.bind(this);
+        this.onNewAnswer = this.onNewAnswer.bind(this);
+        this.onNewOffer = this.onNewOffer.bind(this);
     }
 
     public getGameId() {
@@ -83,7 +96,6 @@ export class SocketObservable {
 
     public bid(ammount: number) {
         const userId = getCookie('id');
-        alert(JSON.stringify({ ammount, userId, gameId: this.gameId }))
         this.socket?.emit('bid', JSON.stringify({ ammount, userId, gameId: this.gameId }))
     }
 
@@ -96,7 +108,6 @@ export class SocketObservable {
     }
 
     private onStart(data: string) {
-        alert('start')
         this.onStartSubscribers.forEach(x => x.onUpdate(data));
     }
 
@@ -126,6 +137,21 @@ export class SocketObservable {
         if (!isNaN(value)) {
             this.onBidSuccessSubscribers.forEach(x => x.onUpdate(value));
         }
+    }
+
+    private onAnswer(data: string) {
+        const value = JSON.parse(data) as Offer & { playerId: string };
+        this.onAnswerSubscribers.forEach(x => x.onUpdate(value));
+    }
+
+    private onNewOffer(data: string) {
+        const value = JSON.parse(data) as Candidate;
+        this.onNewOfferSubscribers.forEach(x => x.onUpdate(value));
+    }
+
+    private onNewAnswer(data: string) {
+        const value = JSON.parse(data) as Candidate;
+        this.onNewAnswerSubscribers.forEach(x => x.onUpdate(value));
     }
 
     // #endregion
@@ -196,6 +222,39 @@ export class SocketObservable {
         this.onBidSubscribers.push({ id, onUpdate: cb });
         return id;
     }
+
+    public subscribeAnswer(cb: OnUpdate<Offer & { playerId: string }>) {
+        if (!this.eventsSubscribedTo.answer) {
+            this.socket?.on('answer', this.onAnswer);
+            this.eventsSubscribedTo.answer = true;
+        }
+
+        const id = uuid();
+        this.onAnswerSubscribers.push({ id, onUpdate: cb });
+        return id;
+    }
+
+    public subscribeToNewOffer(cb: OnUpdate<Candidate>) {
+        if (!this.eventsSubscribedTo.newOffer) {
+            this.socket?.on('newOfferCandidate', this.onNewOffer);
+            this.eventsSubscribedTo.newOffer = true;
+        }
+
+        const id = uuid();
+        this.onNewOfferSubscribers.push({ id, onUpdate: cb });
+        return id;
+    }
+
+    public subscribeToNewAnswer(cb: OnUpdate<Candidate>) {
+        if (!this.eventsSubscribedTo.newAnswer) {
+            this.socket?.on('newAnswerCandidate', this.onNewAnswer);
+            this.eventsSubscribedTo.newAnswer = true;
+        }
+
+        const id = uuid();
+        this.onNewAnswerSubscribers.push({ id, onUpdate: cb });
+        return id;
+    }
     // #endregion
 
     // #region Unsubscribe
@@ -256,6 +315,36 @@ export class SocketObservable {
         if (this.onBidSuccessSubscribers.length === 0) {
             this.socket?.off('bidSuccess', this.onBidError);
             this.eventsSubscribedTo.bidSuccess = false;
+        }
+    }
+
+    public unsubscribeAnswer(id: string) {
+        this.onAnswerSubscribers = this.onAnswerSubscribers.filter(x => x.id !== id);
+
+        // Stop listening to these events if we don't have any subscribers
+        if (this.onAnswerSubscribers.length === 0) {
+            this.socket?.off('answer', this.onAnswer);
+            this.eventsSubscribedTo.answer = false;
+        }
+    }
+
+    public unsubscribeNewOffer(id: string) {
+        this.onNewOfferSubscribers = this.onNewOfferSubscribers.filter(x => x.id !== id);
+
+        // Stop listening to these events if we don't have any subscribers
+        if (this.onNewOfferSubscribers.length === 0) {
+            this.socket?.off('newOfferCandidate', this.onNewOffer);
+            this.eventsSubscribedTo.newOffer = false;
+        }
+    }
+
+    public unsubscribeNewAnswer(id: string) {
+        this.onNewAnswerSubscribers = this.onNewAnswerSubscribers.filter(x => x.id !== id);
+
+        // Stop listening to these events if we don't have any subscribers
+        if (this.onNewAnswerSubscribers.length === 0) {
+            this.socket?.off('newAnswerCandidate', this.onNewAnswer);
+            this.eventsSubscribedTo.newAnswer = false;
         }
     }
     // #endregion
