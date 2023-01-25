@@ -34,7 +34,7 @@ async function connectDb(connectionString = '') {
 
         else {
             mongoose.set('strictQuery', true);
-            await mongoose.connect(process.env.MONGO_CONNECTION_STRING || '')
+            await mongoose.connect(process.env.MONGO_CONNECTION_STRING || '').catch(console.log);
         }
         // eslint-disable-next-line
         // @ts-ignore
