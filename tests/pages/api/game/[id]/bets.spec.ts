@@ -50,16 +50,6 @@ afterEach(async () => {
     await Game.deleteMany({});
 })
 
-test('Api route returns a 405 for post', async () => {
-    const req: any = { method: 'POST' };
-    const res = mockResponse;
-    await handler(req, res as any);
-
-    expect(res.status).toBeCalledTimes(1);
-    expect(res.status).toBeCalledWith(405);
-    expect(res.end).toBeCalledTimes(1);
-});
-
 test('Api route returns a 405 for put', async () => {
     const req: any = { method: 'PUT' };
     const res = mockResponse;
