@@ -25,6 +25,7 @@ const SetupPage: FC<Props> = (props) => {
 
     async function newGame() {
         await axios.post<LeaveRoomBody>('/api/game/leave', { id: props.playerId, gameCode: props.gameCode });
+        localStorage.removeItem('isRemote')
         router.push('/game');
     }
 

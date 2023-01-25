@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
-import { isObjectIdOrHexString, Types } from 'mongoose';
+import { isObjectIdOrHexString } from 'mongoose';
 import Game, { IGame, Trial } from 'database/models/game';
 import { Heading, Text, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
@@ -12,6 +12,8 @@ import PlayerImage from 'components/host/PlayerImage';
 import RoundBids from 'components/host/RoundBids';
 import { RoundState, stateFromString } from 'types/RoundState';
 import RoundPlay from 'components/host/RoundPlay';
+import axios, { AxiosResponse } from 'axios';
+import Winners from 'components/host/Winners';
 
 
 type GameState = {
@@ -33,6 +35,14 @@ const GamePage: React.FC<Props> = (props: Props) => {
 
     const socketContext = useSocket();
     const router = useRouter();
+
+    // On mount, update all socket listeners to the game's current state
+    // This ensures that everyone is in sync if the host's connection dropped & the page is refreshed
+    useEffect(() => {
+        socketContext.onceConnected(() => {
+            socketContext.updateRoundState(stateFromString(props.game.state));
+        });
+    }, [props.game.state, socketContext]);
 
     useEffect(() => {
         const onUserUpdateId = socketContext.subscribeToOnUserUpdate((data) => {
@@ -59,9 +69,26 @@ const GamePage: React.FC<Props> = (props: Props) => {
         setGameState({ ...gameState, roundState: RoundState.PLAYING });
     }
 
+    async function onNextRoundClickPlay() {
+        socketContext.updateRoundState(RoundState.STARTING);
+        setGameState({ ...gameState, roundState: RoundState.STARTING });
+
+        // Refetch the game state
+        try {
+            const result = await axios.get<null, AxiosResponse<IGame>>(`/api/game/${props.game._id}`);
+            setGameData({ ...result.data });
+        } catch {
+
+        }
+    }
+
     let element: JSX.Element = <></>;
     let roundText = '';
-    if (gameState.roundState === RoundState.STARTING) {
+    if (gameData.currentRound === gameData.rounds.length) {
+        roundText = 'Winners';
+        element = <Winners players={gameData.players} />
+    }
+    else if (gameState.roundState === RoundState.STARTING) {
         roundText = 'Current Scores';
         element = <RoundStart
             onStartRoundClick={onStartRoundClick}
@@ -77,7 +104,8 @@ const GamePage: React.FC<Props> = (props: Props) => {
 
     else if (gameState.roundState === RoundState.PLAYING) {
         roundText = gameData.rounds[gameData.currentRound].title;
-        element = <RoundPlay gameId={props.id} timeLeft={gameData.rounds[gameData.currentRound].timeLimit} />
+        const isFastest = gameData.rounds[gameData.currentRound].type === 'Fastest';
+        element = <RoundPlay isFastest={isFastest} onNext={onNextRoundClickPlay} gameId={props.id} timeLeft={gameData.rounds[gameData.currentRound].timeLimit} />
     }
 
     const half = Math.ceil(gameData.players.length / 2);
@@ -120,7 +148,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         return redirect;
     }
 
-    const game = await Game.findById(new Types.ObjectId(objId), { 'rounds._id': 0, 'players._id': 0 }).lean();
+    const game = await Game.findById(objId, { 'rounds._id': 0, 'players._id': 0 }).lean();
 
     if (!game) {
         return redirect;

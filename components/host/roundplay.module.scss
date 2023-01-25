@@ -1,5 +1,6 @@
 .main {
     position: relative;
+    width: 850px;
     .playergrid {
         display: flex;
         justify-content: space-between;
@@ -30,5 +31,13 @@
         top: 300px;
         background-color: var(--background-orange-dark);
         cursor: unset;
+    }
+    
+    .click {
+        cursor: pointer;
+    }
+
+    .click:hover {
+        filter: brightness(1.2);
     }
 }

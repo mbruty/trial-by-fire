@@ -37,7 +37,7 @@ const RoundStart: FC<Props> = ({ players, roundTitle, onStartRoundClick }) => {
         }
     }, [])
 
-    const sorted = players.sort((a, b) => a.beanBalance - b.beanBalance);
+    const sorted = players.sort((a, b) => b.beanBalance - a.beanBalance);
 
     return (
         <div className={styles.main}>
@@ -59,7 +59,7 @@ const RoundStart: FC<Props> = ({ players, roundTitle, onStartRoundClick }) => {
                             </Thead>
                             <Tbody>
                                 {sorted.map(x => (
-                                    <Tr key={x._id as string}>
+                                    <Tr data-test-id={x.name} key={x._id as string}>
                                         <Td>
                                             <HStack>
                                                 {x.imageURL &&

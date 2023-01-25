@@ -7,6 +7,8 @@ declare global {
         joined: (data: string) => void;
         stateUpdate: (data: string) => void;
         newBid: (data: string) => void;
+        bidError: (data: string) => void;
+        bidSuccess: (data: string) => void;
     }
 
     declare interface ClientToServerEvents {

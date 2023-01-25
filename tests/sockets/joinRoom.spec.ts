@@ -83,7 +83,7 @@ test('Socket emits room data when given a valid room code', async () => {
         emit: vi.fn()
      };
     await joinRoom('123', socket);
-     const expected = `{"_id":"${gameId.toString()}","code":"123","startingBalance":100,"state":"waiting","currentRound":"0","biddingSeconds":30,"players":[{"name":"test","imageURL":"test.jpg","beanBalance":100,"isRemote":true,"currentBid":0},{"name":"test2","imageURL":"test2.jpg","beanBalance":100,"isRemote":true,"currentBid":0}],"rounds":[],"__v":0}`
+     const expected = `{"_id":"${gameId.toString()}","code":"123","startingBalance":100,"state":"waiting","currentRound":0,"biddingSeconds":30,"players":[{"name":"test","imageURL":"test.jpg","beanBalance":100,"isRemote":true,"currentBid":0},{"name":"test2","imageURL":"test2.jpg","beanBalance":100,"isRemote":true,"currentBid":0}],"rounds":[],"__v":0}`
     expect(socket.emit).toHaveBeenCalledTimes(1);
     expect(socket.emit).toHaveBeenCalledWith('joined', expected);
 });

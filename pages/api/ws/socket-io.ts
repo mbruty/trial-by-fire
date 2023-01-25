@@ -38,8 +38,8 @@ function setupSocketHandlers(io: Server<ClientToServerEvents, ServerToClientEven
     io.on('connection', (socket) => {
         socket.on('join', (message: string) => joinRoom(message, socket));
         socket.on('start', startGame);
-        socket.on('stateUpdate',stateUpdate);
-        socket.on('bid', bid);
+        socket.on('stateUpdate', stateUpdate);
+        socket.on('bid', (message: string) => bid(message, socket));
     });
 }
 

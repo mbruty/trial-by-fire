@@ -13,6 +13,7 @@ type Props = {
 }
 
 const PlayerImage: FC<Props> = ({ variant, player }) => {
+    if (player === undefined) return null;
     let constraint = 0;
 
     if (variant === 'xs') {
@@ -31,8 +32,9 @@ const PlayerImage: FC<Props> = ({ variant, player }) => {
         constraint = 1024;
     }
 
+
     return (
-        <Card className={styles.card} maxW='sm' variant='elevated'>
+        <Card data-test-id={`player-${player.name}`} className={styles.card} maxW='sm' variant='elevated'>
             <CardHeader className={styles['card-heading']} fontSize='xl'>{player.name}</CardHeader>
             <StackDivider />
             <Image
@@ -50,13 +52,7 @@ const PlayerImage: FC<Props> = ({ variant, player }) => {
                     src={imageSrcToGoogleCloudUrl(player.imageURL)}
                     alt={`Player ${player.name}'s avatar`}
                 /> :
-                <Image
-                    className={styles.profile}
-                    width={constraint}
-                    height={constraint}
-                    src='https://w7.pngwing.com/pngs/845/519/png-transparent-computer-icons-avatar-avatar-heroes-logo-fictional-character.png }'
-                    alt={`Player ${player.name}'s avatar`}
-                />
+                <p>No image?</p>
             }
         </Card>
     )

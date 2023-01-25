@@ -76,6 +76,8 @@ const IndexPage: FC = () => {
             const response = await axios.post<JoinRoomBody, AxiosResponse<JoinRoomResponse>>('/api/game/join', body)
 
             if (response.status === 200) {
+                // Save the remote status to the local storage
+                localStorage.setItem('isRemote', data.isRemote.toString());
                 // Navigate to next page
                 router.push('/game/setup');
             }

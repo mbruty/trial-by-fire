@@ -1,4 +1,4 @@
-import { Box, Button, Heading, HStack, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from '@chakra-ui/react';
+import { Box, Button, ButtonGroup, Heading, HStack, Table, TableContainer, Tbody, Td, Text, Th, Thead, Tr, VStack } from '@chakra-ui/react';
 import axios from 'axios';
 import Image from 'next/image';
 import { FC, useCallback, useEffect, useState } from 'react';
@@ -6,6 +6,7 @@ import { GameUser, IGame, Trial } from 'database/models/game';
 import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
 import useSocket from 'hooks/useSocket';
 import styles from './roundstart.module.scss';
+import { RoundState } from 'types/RoundState';
 
 type Props = {
     currentRound: Trial
@@ -19,6 +20,14 @@ const RoundBids: FC<Props> = ({ currentRound, game, onNext }) => {
     const [errors, setErrors] = useState<string | null>();
     const [topBids, setTopBids] = useState<Array<GameUser>>([]);
     const socket = useSocket();
+
+    function restart() {
+        // Get everyone on the same page as us again
+        socket.updateRoundState(RoundState.BIDDING);
+        setMaxBid(0);
+        setTopBids([]);
+        setTimeLeft(game.biddingSeconds);
+    }
 
     // Subscribe to the bid event on mount
     useEffect(() => {
@@ -79,40 +88,48 @@ const RoundBids: FC<Props> = ({ currentRound, game, onNext }) => {
 
                 {errors && <p className='error'>{errors}</p>}
 
-                <Button onClick={onNext} colorScheme='teal' disabled={timeLeft !== 0}>Continue</Button>
-                {topBids && (
-                    <Box style={{ marginTop: '1rem' }} className='container' borderRadius='md' borderColor='white' borderWidth='thin'>
-                        <TableContainer>
-                            <Table variant='simple'>
-                                <Thead>
-                                    <Tr>
-                                        <Th><Text fontSize='2xl'>Player</Text></Th>
-                                        <Th><Text fontSize='2xl'>Bid ammount</Text></Th>
-                                    </Tr>
-                                </Thead>
-                                <Tbody>
-                                    {topBids.slice(0, 2).map(x => (
-                                        <Tr key={x._id as string}>
-                                            <Td>
-                                                <HStack>
-                                                    {x.imageURL &&
-                                                        <Image
-                                                            width={64}
-                                                            height={64}
-                                                            src={imageSrcToGoogleCloudUrl(x.imageURL)}
-                                                            alt={`Player ${x.name}'s picture`}
-                                                        />
-                                                    }
-                                                    <Text fontSize='2xl'>{x.name}</Text>
-                                                </HStack>
-                                            </Td>
-                                            <Td><Text fontSize='2xl'>{x.currentBid}</Text></Td>
+                <Button onClick={onNext} colorScheme='teal' disabled={timeLeft !== 0 && topBids.length < 2}>Continue</Button>
+                {timeLeft === 0 && (
+                    <>
+                        <Box style={{ marginTop: '1rem' }} className='container' borderRadius='md' borderColor='white' borderWidth='thin'>
+                            <TableContainer>
+                                <Table variant='simple'>
+                                    <Thead>
+                                        <Tr>
+                                            <Th><Text fontSize='2xl'>Player</Text></Th>
+                                            <Th><Text fontSize='2xl'>Bid ammount</Text></Th>
                                         </Tr>
-                                    ))}
-                                </Tbody>
-                            </Table>
-                        </TableContainer>
-                    </Box>
+                                    </Thead>
+                                    <Tbody>
+                                        {topBids.slice(0, 2).map(x => (
+                                            <Tr key={x._id as string}>
+                                                <Td>
+                                                    <HStack>
+                                                        {x.imageURL &&
+                                                            <Image
+                                                                width={64}
+                                                                height={64}
+                                                                src={imageSrcToGoogleCloudUrl(x.imageURL)}
+                                                                alt={`Player ${x.name}'s picture`}
+                                                            />
+                                                        }
+                                                        <Text fontSize='2xl'>{x.name}</Text>
+                                                    </HStack>
+                                                </Td>
+                                                <Td><Text fontSize='2xl'>{x.currentBid}</Text></Td>
+                                            </Tr>
+                                        ))}
+                                    </Tbody>
+                                </Table>
+                            </TableContainer>
+                        </Box>
+                        {topBids.length < 2 && (
+                            <>
+                                <p className="error">Less than two people have bid</p>
+                                <ButtonGroup><Button colorScheme='whatsapp' onClick={restart}>Restart bidding</Button> </ButtonGroup>
+                            </>
+                        )}
+                    </>
                 )}
             </VStack>
 

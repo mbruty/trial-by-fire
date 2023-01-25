@@ -29,11 +29,29 @@
       "request": "launch",
       "name": "Debug Current Test File",
       "autoAttachChildProcesses": true,
-      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
       "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
-      "args": ["run", "${relativeFile}"],
+      "args": [
+        "run",
+        "${relativeFile}"
+      ],
       "smartStep": true,
       "console": "integratedTerminal"
-    }
+    },
+    {
+      "type": "chrome",
+      "request": "attach",
+      "name": "Attach to Cypress Chrome",
+      "port": 9222,
+      "urlFilter": "http://localhost*",
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "skipFiles": [
+        "cypress_runner.js",
+      ],
+    },
   ]
 }

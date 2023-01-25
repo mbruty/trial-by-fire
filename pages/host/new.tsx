@@ -66,7 +66,7 @@ const NewTrialPage: FC = () => {
             const body: CreateGameBody = { ...formData };
             const response = await axios.post<CreateGameBody, AxiosResponse<CreateGameResponse>>('/api/game/create', body);
             if (response.status === 200) {
-                router.push(`/host/${response.data.gameId}`)
+                router.push(`/host/lobby/${response.data.gameId}`)
             }
         } catch (e) {
             setErrors('There was an issue creating this trial... Try again in a bit ');
@@ -114,7 +114,7 @@ const NewTrialPage: FC = () => {
                             style={{ marginBottom: index === formData.trials.length - 1 ? 0 : '1rem' }}
                         >
                             <HStack>
-                                <Input value={value.title} onChange={(e) => updateFormData(index, e.target.value, 'title')} placeholder='Trial title' size='md' />
+                                <Input id={`title-${index}`} value={value.title} onChange={(e) => updateFormData(index, e.target.value, 'title')} placeholder='Trial title' size='md' />
                                 <Select value={value.type} onChange={(e) => updateFormData(index, e.target.value, 'type')} icon={<ChevronDownIcon />} placeholder='Trial type'>
                                     <option>Time trial</option>
                                     <option>Fastest</option>
@@ -149,14 +149,14 @@ const NewTrialPage: FC = () => {
                                 </NumberInputStepper>
                             </NumberInput>
                         )}
-                        <Button onClick={addTrial} style={{ padding: '0 25px' }} leftIcon={<AddIcon />} colorScheme='teal' variant='solid'>
+                        <Button id='add' onClick={addTrial} style={{ padding: '0 25px' }} leftIcon={<AddIcon />} colorScheme='teal' variant='solid'>
                             Add
                         </Button>
                     </HStack>
                 </Box>
                 {errors && <p className='error'>{errors}</p>}
                 <Center>
-                    <Button onClick={start} colorScheme='whatsapp'>Start</Button>
+                    <Button id='start' onClick={start} colorScheme='whatsapp'>Start</Button>
                 </Center>
                 <Text>Want to save this for later? <Link href='/signup'>Create an account</Link></Text>
             </Stack>

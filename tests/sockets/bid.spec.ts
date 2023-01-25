@@ -23,6 +23,10 @@ afterAll(async () => {
     await disconnectMockDb();
 })
 
+const socket: any = {
+    emit: vi.fn()
+ };
+
 beforeEach(async () => {
     const game = await Game.create({
         code: '123',
@@ -56,7 +60,7 @@ test('No games get updated if invalid id is provided', async () => {
         userId: playerId.toString(),
         gameId: 'not a object id'
     }
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     // Get all games, and ensure their __v property is 0
     const games = await Game.find({});
@@ -74,7 +78,7 @@ test('No games get updated if random game id is provided', async () => {
         userId: playerId.toString(),
         gameId: new Types.ObjectId().toString()
     }
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     // Get all games, and ensure their __v property is 0
     const games = await Game.find({});
@@ -92,7 +96,8 @@ test('No games get updated if random game id is provided', async () => {
         userId: playerId.toString(),
         gameId: new Types.ObjectId().toString()
     }
-    await bid(JSON.stringify(message));
+
+    await bid(JSON.stringify(message), socket);
 
     // Get all games, and ensure their __v property is 0
     const games = await Game.find({});
@@ -120,7 +125,7 @@ test('Game does not updated if bid is after the ending', async () => {
 
     await game.save();
 
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     game = await Game.findById(gameId);
 
@@ -152,7 +157,7 @@ test('Player does not get updated if bid is less than current bid', async () => 
 
     await game.save();
 
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     game = await Game.findById(gameId);
     expect(game).toBeDefined();
@@ -175,7 +180,7 @@ test('Player does not get updated if bid is greater than bean balance', async ()
 
     await game.save();
 
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     game = await Game.findById(gameId);
     expect(game).toBeDefined();
@@ -200,7 +205,7 @@ test('Player gets updated if bid is within time and under their balance', async 
 
     await game.save();
 
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     game = await Game.findById(gameId);
     expect(game).toBeDefined();
@@ -209,7 +214,42 @@ test('Player gets updated if bid is within time and under their balance', async 
     expect(player?.currentBid).toBe(100);
 });
 
-test('A socket update gets sent with the new bid amount', async () => {
+test('Player gets told if there was an error with the object id', async () => {
+    const message: message = {
+        ammount: 100,
+        userId: playerId.toString(),
+        gameId: 'not a valid id'
+    }
+
+    await bid(JSON.stringify(message), socket);
+
+    expect(socket.emit).toBeCalledTimes(1);
+    expect(socket.emit).toBeCalledWith('bidError', 'There was an error processing the bid, try again');
+});
+
+test('Player gets told if their bid was out of time', async () => {
+    const message: message = {
+        ammount: 100,
+        userId: playerId.toString(),
+        gameId: gameId.toString()
+    }
+
+    const game = await Game.findById(gameId);
+
+    if (!game) throw 'Game was not found, there is an error in the before each';
+
+    game.bidStartedTimeStamp = Date.now() - 6 * 1000;
+    game.biddingSeconds = 5;
+
+    await game.save();
+
+    await bid(JSON.stringify(message), socket);
+
+    expect(socket.emit).toBeCalledTimes(1);
+    expect(socket.emit).toBeCalledWith('bidError', 'The bidding phase has ended.');
+});
+
+test('A socket update gets sent to the host with the new bid amount', async () => {
     const message: message = {
         ammount: 100,
         userId: playerId.toString(),
@@ -225,10 +265,32 @@ test('A socket update gets sent with the new bid amount', async () => {
 
     await game.save();
 
-    await bid(JSON.stringify(message));
+    await bid(JSON.stringify(message), socket);
 
     expect(to).toBeCalledTimes(1);
     expect(to).toBeCalledWith('123');
     expect(emit).toBeCalledTimes(1);
     expect(emit).toBeCalledWith('newBid', '100');
+});
+
+test('A socket update gets sent to the user with the new bid amount', async () => {
+    const message: message = {
+        ammount: 100,
+        userId: playerId.toString(),
+        gameId: gameId.toString()
+    }
+
+    const game = await Game.findById(gameId);
+
+    if (!game) throw 'Game was not found, there is an error in the before each';
+
+    game.bidStartedTimeStamp = Date.now();
+    game.biddingSeconds = 5;
+
+    await game.save();
+
+    await bid(JSON.stringify(message), socket);
+
+    expect(socket.emit).toBeCalledTimes(1);
+    expect(socket.emit).toBeCalledWith('bidSuccess', '100');
 });

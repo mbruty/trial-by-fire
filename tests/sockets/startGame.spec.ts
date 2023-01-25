@@ -66,7 +66,7 @@ test('Game state is set to playing with valid code', async () => {
     const game = await Game.findById(gameId);
 
     expect(game).toBeDefined();
-    expect(game?.state).toBe('playing');
+    expect(game?.state).toBe('starting');
 });
 
 test('Socket listeners are updated that the game has started', async () => {

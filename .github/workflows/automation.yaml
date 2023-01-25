@@ -48,7 +48,7 @@ jobs:
         uses: borales/actions-yarn@v4
         with:
           cmd: install # yarn install
-      - name: Run linting
+      - name: Run build
         uses: borales/actions-yarn@v4
         with:
           cmd: build
