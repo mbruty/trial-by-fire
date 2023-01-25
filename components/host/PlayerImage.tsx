@@ -37,7 +37,7 @@ const PlayerImage: FC<Props> = ({ variant, player, children }) => {
     }
 
     let element: React.ReactNode = <Image
-        className={styles.profile}
+        className={styles.profile + ' profile'}
         width={constraint}
         height={constraint}
         src={imageSrcToGoogleCloudUrl(player.imageURL ?? '')}

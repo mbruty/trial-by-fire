@@ -19,6 +19,27 @@ export async function getBids(gameId: string) {
     return players;
 }
 
+export async function bet(body: { playerId: string, gameId: string, amount: number, selectedPlayer: string }) {
+    if (!isObjectIdOrHexString(body.playerId) || !isObjectIdOrHexString(body.gameId) || !isObjectIdOrHexString(body.selectedPlayer)) {
+        throw 400;
+    }
+
+    const game = await Game.findById(body.gameId);
+
+    if (!game) throw 404;
+    if (game.state !== 'playing') throw 400;
+
+    const player = game.players.find(x => x._id.toString() === body.playerId);
+    
+    if (!player) throw 404;
+    if (player.beanBalance < body.amount) throw 400;
+
+    player.currentBet = body.amount;
+    player.betPick = body.selectedPlayer;
+
+    await game.save();
+}
+
 async function handler(
     req: NextApiRequest,
     res: NextApiResponse
@@ -27,6 +48,15 @@ async function handler(
         try {
             const response = await getBids(req.query.id as string);
             res.json(response);
+            res.status(200);
+        } catch (e: unknown) {
+            res.status(e as number);
+        } finally {
+            res.end();
+        }
+    } else if (req.method === 'POST') {
+        try {
+            await bet(req.body);
             res.status(200);
         } catch (e: unknown) {
             res.status(e as number);

@@ -1,0 +1,9 @@
+.container {
+    img {
+        cursor: pointer;
+    }
+
+    .selected > div {
+        outline: 5px solid white;
+    }
+}

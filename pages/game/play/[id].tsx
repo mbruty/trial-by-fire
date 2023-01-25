@@ -11,6 +11,7 @@ import useSocket from 'hooks/useSocket';
 import { RoundState, stateFromString } from 'types/RoundState';
 import styles from './[id].module.scss';
 import useRtc from 'hooks/useRtc';
+import RoundPlay from 'components/game/RoundPlay';
 
 type Props = {
     game: IGame;
@@ -24,7 +25,7 @@ const PlayPage: FC<Props> = (props) => {
     const rtcConnection = useRtc();
     const localStreamRef = useRef<HTMLVideoElement | null>(null);
     const forceUpdate = useForceUpdate();
-
+    const player = props.game.players.find(x => x._id === props.playerId);
     useOrangeBackground();
 
     useEffect(() => {
@@ -62,15 +63,15 @@ const PlayPage: FC<Props> = (props) => {
 
 
         element = <Bid title={title} beanBalance={player?.beanBalance as number} />
-    }
-
-    else {
+    } else if (gameState === RoundState.STARTING) {
         element = (
             <VStack>
                 <Heading as='h1'>Waiting on host to start next round</Heading>
                 <Text fontSize='2xl'>Up next: {game.rounds[game.currentRound].title}</Text>
             </VStack>
         );
+    } else if (gameState === RoundState.PLAYING) {
+        element = <RoundPlay beans={player?.beanBalance ?? 0} playerId={props.playerId} gameId={props.game._id.toString()} />
     }
 
     rtcConnection?.setLocalStreamOnVideoElement(localStreamRef);
@@ -80,12 +81,12 @@ const PlayPage: FC<Props> = (props) => {
         <div className={styles.main}>
             <div className={styles.container}>
                 {{ ...element }}
-                <h2>Host</h2>
+                {/* <h2>Host</h2>
                 <video id='remote' width={464} autoPlay playsInline muted />
                 <h2>You</h2>
                 <div style={{ width: 300, height: 300, overflow: 'hidden' }}>
                     <video ref={localStreamRef} id='local' width={300} autoPlay playsInline muted />
-                </div>
+                </div> */}
             </div>
         </div>
     )

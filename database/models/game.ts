@@ -7,6 +7,8 @@ export type GameUser = {
     beanBalance: number;
     isRemote: boolean;
     currentBid?: number;
+    currentBet?: number;
+    betPick?: Types.ObjectId | string;
 }
 
 export type Trial = {
@@ -39,7 +41,9 @@ const gameSchema = new Schema({
         imageURL: { type: String, required: false },
         beanBalance: { type: Number, required: true },
         isRemote: { type: Boolean, required: true },
-        currentBid: { type: Number, rquired: false }
+        currentBid: { type: Number, required: false },
+        currentBet: { type: Number, required: false },
+        betPick: { type: Types.ObjectId, required: false }
     }],
     rounds: [{
         title: { type: String, required: true },

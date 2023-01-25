@@ -26,6 +26,20 @@ export async function win(gameId: string, playerId: string) {
     loser.beanBalance -= loser.currentBid;
 
     game.currentRound += 1;
+
+    // Process all bets
+    const playersWithBets = players.filter(x => x.currentBet !== undefined);
+
+    playersWithBets.forEach(x => {
+        if (x.betPick?.toString() === playerId) {
+            //                 v-- This will never be null due to the above filter, but TS isn't that clever
+            x.beanBalance += (x.currentBet ?? 0) / 2;
+        } else {
+            x.beanBalance -= x.currentBet ?? 0;
+        }
+    });
+
+    players.forEach(x => { x.currentBet = undefined; x.betPick = undefined });
     await game.save();
 }
 
