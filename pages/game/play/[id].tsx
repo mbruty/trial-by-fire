@@ -1,8 +1,8 @@
-import { Heading, Text, VStack } from '@chakra-ui/react';
+import { Heading, Text, useForceUpdate, VStack } from '@chakra-ui/react';
 import { getCookie } from 'cookies-next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
 import { GetServerSideProps } from 'next';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import Bid from 'components/game/Bid';
 import Game, { IGame } from 'database/models/game';
 import mongoConnection from 'database/mongoConnection';
@@ -10,6 +10,7 @@ import useOrangeBackground from 'hooks/useOrangeBackground';
 import useSocket from 'hooks/useSocket';
 import { RoundState, stateFromString } from 'types/RoundState';
 import styles from './[id].module.scss';
+import useRtc from 'hooks/useRtc';
 
 type Props = {
     game: IGame;
@@ -20,7 +21,27 @@ const PlayPage: FC<Props> = (props) => {
     const [gameState, setGameState] = useState(stateFromString(props.game.state));
     const game = props.game;
     const socket = useSocket();
+    const rtcConnection = useRtc();
+    const localStreamRef = useRef<HTMLVideoElement | null>(null);
+    const forceUpdate = useForceUpdate();
+
     useOrangeBackground();
+
+    useEffect(() => {
+        if (!rtcConnection) return;
+        rtcConnection.start().then(() => {
+            rtcConnection.joinCall(props.game._id.toString(), props.playerId);
+        })
+
+        const id = socket.subscribeToNewOffer((candidate) => {
+            rtcConnection.newCandidate(candidate);
+            forceUpdate();
+        })
+
+        return () => {
+            socket.unsubscribeNewOffer(id);
+        }
+    }, [rtcConnection, props.game._id, socket, props.playerId, forceUpdate]);
 
     let element: JSX.Element = <></>;
 
@@ -52,10 +73,19 @@ const PlayPage: FC<Props> = (props) => {
         );
     }
 
+    rtcConnection?.setLocalStreamOnVideoElement(localStreamRef);
+    rtcConnection?.setRemoteStreamOnVideoElement();
+
     return (
         <div className={styles.main}>
             <div className={styles.container}>
                 {{ ...element }}
+                <h2>Host</h2>
+                <video id='remote' width={464} autoPlay playsInline muted />
+                <h2>You</h2>
+                <div style={{ width: 300, height: 300, overflow: 'hidden' }}>
+                    <video ref={localStreamRef} id='local' width={300} autoPlay playsInline muted />
+                </div>
             </div>
         </div>
     )
@@ -75,7 +105,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
         }
     }
 
-    const game = await Game.findById(new Types.ObjectId(objId), { '_id': 0, 'rounds._id': 0, }).lean();
+    const game = await Game.findById(new Types.ObjectId(objId), { 'rounds._id': 0, }).lean();
 
     if (!game) {
         return {
@@ -87,6 +117,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     }
 
     game.players.forEach(x => { x._id = x._id.toString() })
+    game._id = game._id.toString();
 
     if (game.state === 'waiting') {
         return {

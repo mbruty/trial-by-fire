@@ -1,21 +1,47 @@
 import mongoose, { Schema, Types } from 'mongoose';
 
 export type IceCall = {
-    gameId: Types.ObjectId | string;
-    offers: Array<{
-        candidate: string;
-        sdpMLineIndex: number;
-        sdpMid: string;
-    }>
+    _id: Types.ObjectId | string;
+    offer: Offer
+    offerCandidates: Array<Candidate>,
+    answer: Offer,
+    answerCandidates: Array<Candidate>
+}
+
+export type Candidate = {
+    candidate: string,
+    sdpMLineIndex: number,
+    sdpMid: string,
+    type: 'offer' | 'accept' | null;
+    usernameFragment: string;
+}
+
+export type Offer = {
+    sdp: string;
+    type: string;
 }
 
 const iceCalls = new Schema({
-    gameId: { type: Types.ObjectId, required: true },
-    offers: [{
+    offer: {
+        sdp: { type: String, required: true },
+        type: { type: String, required: true }
+    },
+    offerCandidates: [{
         candidate: { type: String, required: true },
         sdpMLineIndex: { type: Number, required: true },
-        sdpMid: { type: String, required: true }
-    }]
+        sdpMid: { type: String, required: true },
+        usernameFragment: { type: String, required: true }
+    }],
+    answerCandidates: [{
+        candidate: { type: String, required: true },
+        sdpMLineIndex: { type: Number, required: true },
+        sdpMid: { type: String, required: true },
+        usernameFragment: { type: String, required: true }
+    }],
+    answer: {
+        sdp: { type: String, required: true },
+        type: { type: String, required: true }
+    }
 })
 
 // This is required to work with nextjs hmr

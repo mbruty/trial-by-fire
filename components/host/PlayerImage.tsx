@@ -6,13 +6,17 @@ import { FC } from 'react';
 import { GameUser } from 'database/models/game';
 import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
 import styles from './playerimage.module.scss';
+import useRtc from 'hooks/useRtc';
 
 type Props = {
     variant: 'xs' | 'sm' | 'md' | 'lg';
-    player: GameUser
+    player: GameUser;
+    children?: React.ReactNode;
 }
 
-const PlayerImage: FC<Props> = ({ variant, player }) => {
+const PlayerImage: FC<Props> = ({ variant, player, children }) => {
+    const rtcConnection = useRtc();
+
     if (player === undefined) return null;
     let constraint = 0;
 
@@ -32,7 +36,32 @@ const PlayerImage: FC<Props> = ({ variant, player }) => {
         constraint = 1024;
     }
 
+    let element: React.ReactNode = <Image
+        className={styles.profile}
+        width={constraint}
+        height={constraint}
+        src={imageSrcToGoogleCloudUrl(player.imageURL ?? '')}
+        alt={`Player ${player.name}'s avatar`}
+    />;
 
+    if (!player.imageURL) {
+        element = <p>No image?</p>;
+    }
+
+    if (rtcConnection?.remoteId === player._id) {
+        console.log('ye')
+        element =
+            <div style={{ width: constraint, height: constraint, overflow: 'hidden' }}>
+                <video id='remote' autoPlay playsInline muted style={{ width: '100%' }} />
+            </div>
+    }
+
+    if (children) {
+        element = children;
+    }
+
+    rtcConnection?.setRemoteStreamOnVideoElement();
+    
     return (
         <Card data-test-id={`player-${player.name}`} className={styles.card} maxW='sm' variant='elevated'>
             <CardHeader className={styles['card-heading']} fontSize='xl'>{player.name}</CardHeader>
@@ -44,16 +73,7 @@ const PlayerImage: FC<Props> = ({ variant, player }) => {
                 className={styles.fire}
                 src='https://storage.googleapis.com/trial-by-fire/Fire.svg'
             />
-            {player.imageURL ?
-                <Image
-                    className={styles.profile}
-                    width={constraint}
-                    height={constraint}
-                    src={imageSrcToGoogleCloudUrl(player.imageURL)}
-                    alt={`Player ${player.name}'s avatar`}
-                /> :
-                <p>No image?</p>
-            }
+            {element}
         </Card>
     )
 }
