@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString } from 'mongoose';
 import Game, { GameUser, IGame, Trial } from 'database/models/game';
-import { Heading, Text, VStack } from '@chakra-ui/react';
+import { Heading, Text, useForceUpdate, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
 import useSocket from 'hooks/useSocket';
 import mongoConnection from 'database/mongoConnection';
@@ -33,7 +33,7 @@ const GamePage: React.FC<Props> = (props: Props) => {
         currentRound: props.game.rounds[props.game.currentRound],
         roundState: stateFromString(props.game.state)
     });
-    const [rtcConnected, setRtcConnected] = useState(false);
+    const forceUpdate = useForceUpdate();
     const localStreamRef = useRef<HTMLVideoElement>(null);
 
     const socketContext = useSocket();
@@ -49,10 +49,9 @@ const GamePage: React.FC<Props> = (props: Props) => {
             rtcConnection.createOffer(socketContext.getGameId());
         });
 
-
         const id = socketContext.subscribeToNewAnswer((candidate) => {
             rtcConnection.newCandidate(candidate);
-            setRtcConnected(true);
+            forceUpdate();
         })
 
         const answerId = socketContext.subscribeAnswer((offer) => {
@@ -64,7 +63,7 @@ const GamePage: React.FC<Props> = (props: Props) => {
             socketContext.unsubscribeNewOffer(id);
             socketContext.unsubscribeAnswer(answerId);
         }
-    }, [rtcConnection, socketContext, props.id]);
+    }, [rtcConnection, socketContext, props.id, forceUpdate]);
 
     // On mount, update all socket listeners to the game's current state
     // This ensures that everyone is in sync if the host's connection dropped & the page is refreshed
@@ -144,6 +143,7 @@ const GamePage: React.FC<Props> = (props: Props) => {
     const secondHalf = gameData.players.slice(half);
 
     rtcConnection?.setLocalStreamOnVideoElement(localStreamRef);
+    
     const hostPlayer: GameUser = {
         _id: '',
         beanBalance: 0,

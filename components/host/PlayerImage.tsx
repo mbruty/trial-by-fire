@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, StackDivider } from '@chakra-ui/react';
 import Image from 'next/image';
-import { FC, useRef } from 'react';
+import { FC } from 'react';
 import { GameUser } from 'database/models/game';
 import imageSrcToGoogleCloudUrl from 'database/utilities/imageSrcToGoogleCloudUrl';
 import styles from './playerimage.module.scss';
@@ -15,8 +15,6 @@ type Props = {
 }
 
 const PlayerImage: FC<Props> = ({ variant, player, children }) => {
-
-    const remoteStreamRef = useRef<HTMLVideoElement>(null);
     const rtcConnection = useRtc();
 
     if (player === undefined) return null;
@@ -51,15 +49,19 @@ const PlayerImage: FC<Props> = ({ variant, player, children }) => {
     }
 
     if (rtcConnection?.remoteId === player._id) {
-        element = <video ref={remoteStreamRef} autoPlay playsInline muted width={constraint} />
+        console.log('ye')
+        element =
+            <div style={{ width: constraint, height: constraint, overflow: 'hidden' }}>
+                <video id='remote' autoPlay playsInline muted style={{ width: '100%' }} />
+            </div>
     }
 
     if (children) {
         element = children;
     }
 
-    rtcConnection?.setRemoteStreamOnVideoElement(remoteStreamRef);
-
+    rtcConnection?.setRemoteStreamOnVideoElement();
+    
     return (
         <Card data-test-id={`player-${player.name}`} className={styles.card} maxW='sm' variant='elevated'>
             <CardHeader className={styles['card-heading']} fontSize='xl'>{player.name}</CardHeader>

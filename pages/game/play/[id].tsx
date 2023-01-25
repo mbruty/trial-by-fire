@@ -1,8 +1,8 @@
-import { Heading, Text, VStack } from '@chakra-ui/react';
+import { Heading, Text, useForceUpdate, VStack } from '@chakra-ui/react';
 import { getCookie } from 'cookies-next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
 import { GetServerSideProps } from 'next';
-import { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import Bid from 'components/game/Bid';
 import Game, { IGame } from 'database/models/game';
 import mongoConnection from 'database/mongoConnection';
@@ -22,6 +22,9 @@ const PlayPage: FC<Props> = (props) => {
     const game = props.game;
     const socket = useSocket();
     const rtcConnection = useRtc();
+    const localStreamRef = useRef<HTMLVideoElement | null>(null);
+    const forceUpdate = useForceUpdate();
+
     useOrangeBackground();
 
     useEffect(() => {
@@ -32,12 +35,13 @@ const PlayPage: FC<Props> = (props) => {
 
         const id = socket.subscribeToNewOffer((candidate) => {
             rtcConnection.newCandidate(candidate);
+            forceUpdate();
         })
 
         return () => {
             socket.unsubscribeNewOffer(id);
         }
-    }, [rtcConnection, props.game._id, socket, props.playerId]);
+    }, [rtcConnection, props.game._id, socket, props.playerId, forceUpdate]);
 
     let element: JSX.Element = <></>;
 
@@ -69,10 +73,19 @@ const PlayPage: FC<Props> = (props) => {
         );
     }
 
+    rtcConnection?.setLocalStreamOnVideoElement(localStreamRef);
+    rtcConnection?.setRemoteStreamOnVideoElement();
+
     return (
         <div className={styles.main}>
             <div className={styles.container}>
                 {{ ...element }}
+                <h2>Host</h2>
+                <video id='remote' width={464} autoPlay playsInline muted />
+                <h2>You</h2>
+                <div style={{ width: 300, height: 300, overflow: 'hidden' }}>
+                    <video ref={localStreamRef} id='local' width={300} autoPlay playsInline muted />
+                </div>
             </div>
         </div>
     )

@@ -22,6 +22,8 @@ export class WebRtcConnection {
     private isInitalised = false;
     private offerCreated = false;
     private isHost = true;
+    private hasAnswered = false;
+    private answerCandidates: Array<Candidate> = [];
 
     constructor() {
         this.peerConnection = new RTCPeerConnection(servers);
@@ -45,9 +47,10 @@ export class WebRtcConnection {
         v.current.srcObject = this.localStream;
     }
 
-    public setRemoteStreamOnVideoElement(v: MutableRefObject<HTMLVideoElement | null>) {
-        if (!v.current) return;
-        v.current.srcObject = this.remoteStream;
+    public setRemoteStreamOnVideoElement() {
+        const v = document.getElementById('remote') as HTMLVideoElement | null;
+        if (!v) return;
+        v.srcObject = this.remoteStream
     }
 
     private ontrack(event: RTCTrackEvent) {
@@ -156,7 +159,17 @@ export class WebRtcConnection {
     }
 
     public newCandidate(candidate: Candidate) {
-        this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        if (this.hasAnswered) {
+            // Handle a race condition where candidates are sent before the answer
+            if (this.answerCandidates.length !== 0) {
+                this.answerCandidates.forEach(x => {
+                    this.peerConnection.addIceCandidate(new RTCIceCandidate(x));
+                });
+                this.answerCandidates = [];
+            }
+            this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+        }
+        else this.answerCandidates.push(candidate);
     }
 
     public answer(offer: Offer) {
@@ -166,6 +179,7 @@ export class WebRtcConnection {
         });
 
         this.peerConnection.setRemoteDescription(answerDescription);
+        this.hasAnswered = true;
     }
 }
 
