@@ -1,5 +1,6 @@
 # Install dependencies only when needed
 FROM node:lts-alpine AS deps
+ARG mongo_connection
 
 WORKDIR /opt/app
 COPY package.json yarn.lock ./
@@ -20,6 +21,7 @@ RUN yarn run build
 # Production image, copy all the files and run next
 FROM node:lts-alpine AS runner
 
+ENV MONGO_CONNECTION_STRING=$mongo_connection
 WORKDIR /opt/app
 EXPOSE 3000
 ENV NODE_ENV=production

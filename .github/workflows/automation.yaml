@@ -148,6 +148,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3.2.0
         with:
+          build-args: ${{ secrets.MOGNO_STRING }}
           context: .
           push: true
           tags: |
