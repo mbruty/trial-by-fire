@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import Game from 'database/models/game';
+import connectDb from 'database/mongoConnection';
 
 function createCode(): string {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -39,6 +40,7 @@ async function handler(
 ) {
     if (req.method == 'POST') {
         try {
+            await connectDb();
             const response = await createGame(req.body);
             res.json(response);
             res.status(200);

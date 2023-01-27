@@ -36,7 +36,6 @@ const PlayPage: FC<Props> = (props) => {
 
         const id = socket.subscribeToNewOffer((candidate) => {
             rtcConnection.newCandidate(candidate);
-            forceUpdate();
         })
 
         return () => {
