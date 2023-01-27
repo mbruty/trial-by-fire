@@ -1,12 +1,12 @@
 import { AddIcon, ChevronDownIcon, DeleteIcon, DragHandleIcon } from '@chakra-ui/icons';
-import { Box, Button, Center, FormLabel, Heading, HStack, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, Stack, Text } from '@chakra-ui/react';
+import { Box, Button, Center, FormLabel, Heading, HStack, Input, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Select, Stack } from '@chakra-ui/react';
 import axios, { AxiosResponse } from 'axios';
 import Head from 'next/head';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { FC, useState } from 'react';
 import { Trial } from 'database/models/game';
 import styles from './new.module.scss';
+import useOrangeBackground from 'hooks/useOrangeBackground';
 
 // Have to use the old require syntax for this, as it's lacking TS support
 // eslint-disable-next-line
@@ -25,6 +25,7 @@ const NewTrialPage: FC = () => {
     const [addData, setAddData] = useState({ type: '', title: '', timeLimit: 1 });
     const [errors, setErrors] = useState<string | undefined>();
     const router = useRouter();
+    useOrangeBackground();
 
     function addTrial() {
         const newArray = [...formData.trials];
@@ -74,93 +75,96 @@ const NewTrialPage: FC = () => {
     }
 
     return (
-        <>
-            <Head>
-                <title>Trial By Fire - New Trial</title>
-            </Head>
-            <Stack className={styles.main} spacing='1rem'>
-                <Heading as='h1'>Create a trial</Heading>
-                <Box maxW='container.lg' borderWidth='0' borderRadius='lg'>
-                    <HStack>
-                        <label htmlFor='starter-bean-count'>Beans to start with</label>
-                        <NumberInput
-                            id='starter-bean-count'
-                            value={formData.starterBeanCount}
-                            onChange={(e) => setFormData({ ...formData, starterBeanCount: +e })}
-                            defaultValue={1000}
-                        >
-                            <NumberInputField />
-                            <NumberInputStepper>
-                                <NumberIncrementStepper />
-                                <NumberDecrementStepper />
-                            </NumberInputStepper>
-                        </NumberInput>
-                    </HStack>
-                </Box>
-                <Reorder
-                    reorderId="trials-list"
-                    lock="horizontal"
-                    onReorder={onReorder}
-                    holdTime={100}
-                    autoScroll={true}
-                    disableContextMenus={true}
-                >
-                    {formData.trials.map((value, index) => (
-                        <Box
-                            key={index}
-                            maxW='container.lg'
-                            borderWidth='0'
-                            borderRadius='lg'
-                            style={{ marginBottom: index === formData.trials.length - 1 ? 0 : '1rem' }}
-                        >
-                            <HStack>
-                                <Input id={`title-${index}`} value={value.title} onChange={(e) => updateFormData(index, e.target.value, 'title')} placeholder='Trial title' size='md' />
-                                <Select value={value.type} onChange={(e) => updateFormData(index, e.target.value, 'type')} icon={<ChevronDownIcon />} placeholder='Trial type'>
-                                    <option>Time trial</option>
-                                    <option>Fastest</option>
-                                </Select>
-                                <Button onClick={() => deleteTrial(index)} style={{ padding: '0 25px' }} leftIcon={<DeleteIcon />} colorScheme='red' variant='solid'>
-                                    Delete
-                                </Button>
-                                <DragHandleIcon style={{ cursor: 'grab' }} />
-                            </HStack>
-                        </Box>
-                    ))}
-                </Reorder>
-                <Box maxW='container.lg' borderWidth='0' borderRadius='lg'>
-                    <HStack>
-                        <Input value={addData.title} onChange={(e) => setAddData({ ...addData, title: e.target.value })} placeholder='Trial title' size='md' />
-                        <Select value={addData.type} onChange={(e) => setAddData({ ...addData, type: e.target.value })} icon={<ChevronDownIcon />} placeholder='Trial type'>
-                            <option>Time trial</option>
-                            <option>Fastest</option>
-                        </Select>
-                        {addData.type === 'Time trial' && (
+        <Center style={{ width: '100vw' }}>
+            <div style={{ maxWidth: '1000px' }}>
+                <Head>
+                    <title>Trial By Fire - New Trial</title>
+                </Head>
+                <Stack className={styles.main} spacing='1rem'>
+                    <Heading as='h1'>Create a trial</Heading>
+                    <Box maxW='container.lg' borderWidth='0' borderRadius='lg'>
+                        <HStack>
+                            <label htmlFor='starter-bean-count'>Beans to start with</label>
                             <NumberInput
-                                value={addData.timeLimit}
-                                onChange={(e) => setAddData({ ...addData, timeLimit: +e })}
-                                precision={1}
-                                step={0.1}
+                                id='starter-bean-count'
+                                value={formData.starterBeanCount}
+                                onChange={(e) => setFormData({ ...formData, starterBeanCount: +e })}
+                                defaultValue={1000}
                             >
                                 <NumberInputField />
-                                <FormLabel className={styles.floatingLabel}>Time limit (mins)</FormLabel>
                                 <NumberInputStepper>
                                     <NumberIncrementStepper />
                                     <NumberDecrementStepper />
                                 </NumberInputStepper>
                             </NumberInput>
-                        )}
-                        <Button id='add' onClick={addTrial} style={{ padding: '0 25px' }} leftIcon={<AddIcon />} colorScheme='teal' variant='solid'>
-                            Add
-                        </Button>
-                    </HStack>
-                </Box>
-                {errors && <p className='error'>{errors}</p>}
-                <Center>
-                    <Button id='start' onClick={start} colorScheme='whatsapp'>Start</Button>
-                </Center>
-                <Text>Want to save this for later? <Link href='/signup'>Create an account</Link></Text>
-            </Stack>
-        </>
+                        </HStack>
+                    </Box>
+                    <Reorder
+                        reorderId="trials-list"
+                        lock="horizontal"
+                        onReorder={onReorder}
+                        holdTime={100}
+                        autoScroll={true}
+                        disableContextMenus={true}
+                    >
+                        {formData.trials.map((value, index) => (
+                            <Box
+                                key={index}
+                                maxW='container.lg'
+                                borderWidth='0'
+                                borderRadius='lg'
+                                style={{ marginBottom: index === formData.trials.length - 1 ? 0 : '1rem' }}
+                            >
+                                <HStack>
+                                    <Input id={`title-${index}`} value={value.title} onChange={(e) => updateFormData(index, e.target.value, 'title')} placeholder='Trial title' size='md' />
+                                    <label htmlFor={`select-${index}`} style={{ display: 'none' }}>Select trial type for {index}</label>
+                                    <Select id={`select-${index}`}  value={value.type} onChange={(e) => updateFormData(index, e.target.value, 'type')} icon={<ChevronDownIcon />} placeholder='Trial type'>
+                                        <option>Time trial</option>
+                                        <option>Fastest</option>
+                                    </Select>
+                                    <Button onClick={() => deleteTrial(index)} style={{ padding: '0 25px' }} leftIcon={<DeleteIcon />} colorScheme='red' variant='solid'>
+                                        Delete
+                                    </Button>
+                                    <DragHandleIcon style={{ cursor: 'grab' }} />
+                                </HStack>
+                            </Box>
+                        ))}
+                    </Reorder>
+                    <Box maxW='container.lg' borderWidth='0' borderRadius='lg'>
+                        <HStack>
+                            <Input value={addData.title} onChange={(e) => setAddData({ ...addData, title: e.target.value })} placeholder='Trial title' size='md' />
+                            <FormLabel htmlFor='select' style={{ display: 'none' }}>Select trial type</FormLabel>
+                            <Select id='select' value={addData.type} onChange={(e) => setAddData({ ...addData, type: e.target.value })} icon={<ChevronDownIcon />} placeholder='Trial type'>
+                                <option>Time trial</option>
+                                <option>Fastest</option>
+                            </Select>
+                            {addData.type === 'Time trial' && (
+                                <NumberInput
+                                    value={addData.timeLimit}
+                                    onChange={(e) => setAddData({ ...addData, timeLimit: +e })}
+                                    precision={1}
+                                    step={0.1}
+                                >
+                                    <NumberInputField />
+                                    <FormLabel className={styles.floatingLabel}>Time limit (mins)</FormLabel>
+                                    <NumberInputStepper>
+                                        <NumberIncrementStepper />
+                                        <NumberDecrementStepper />
+                                    </NumberInputStepper>
+                                </NumberInput>
+                            )}
+                            <Button id='add' onClick={addTrial} style={{ padding: '0 25px' }} leftIcon={<AddIcon />} colorScheme='teal' variant='solid'>
+                                Add
+                            </Button>
+                        </HStack>
+                    </Box>
+                    {errors && <p className='error'>{errors}</p>}
+                    <Center>
+                        <Button id='start' onClick={start} colorScheme='whatsapp'>Start</Button>
+                    </Center>
+                </Stack>
+            </div>
+        </Center>
     )
 }
 

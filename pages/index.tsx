@@ -27,30 +27,10 @@ export default function Home() {
             <p>Create a game, and create every round</p>
           </Link>
 
-          <Link href="/host/browse" className={styles.card}>
-            <h2>Browse templates &rarr;</h2>
-            <p>Browse pre-made trial games</p>
+          <Link href="/game" className={styles.card}>
+            <h2>Join a game &rarr;</h2>
+            <p>Join a game in progress as a player</p>
           </Link>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
         </div>
       </main>
 
