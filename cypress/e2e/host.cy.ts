@@ -79,6 +79,13 @@ describe('Host integration tests', () => {
     }
     axios.post<JoinRoomBody, AxiosResponse<JoinRoomResponse>>('/api/game/join', playerTwo);
 
+    const playerThree: JoinRoomBody = {
+      gameCode: game.code,
+      isRemote: false,
+      name: 'Player three'
+    }
+    axios.post<JoinRoomBody, AxiosResponse<JoinRoomResponse>>('/api/game/join', playerThree);
+
     cy.wait('@join');
     cy.wait('@join');
 

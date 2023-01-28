@@ -22,7 +22,7 @@ type FormData = {
 
 const NewTrialPage: FC = () => {
     const [formData, setFormData] = useState<FormData>({ starterBeanCount: 1000, trials: [] });
-    const [addData, setAddData] = useState({ type: '', title: '', timeLimit: 1 });
+    const [addData, setAddData] = useState({ type: 'Time trial', title: '', timeLimit: 1 });
     const [errors, setErrors] = useState<string | undefined>();
     const router = useRouter();
     useOrangeBackground();
@@ -31,7 +31,7 @@ const NewTrialPage: FC = () => {
         const newArray = [...formData.trials];
 
         newArray.push(addData);
-        setAddData({ type: '', title: '', timeLimit: 1 });
+        setAddData({ type: '', title: 'Time trial', timeLimit: 1 });
 
         setFormData({ ...formData, trials: newArray });
     }
