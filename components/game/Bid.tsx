@@ -45,7 +45,7 @@ const Bid: FC<Props> = (props) => {
     return (
         <VStack spacing='1rem'>
             <Heading as='h1'>Bid on: {props.title}</Heading>
-            <Text fontSize='xl'>Avalible beans: {props.beanBalance}</Text>
+            <Text fontSize='xl'>Avalible beans to use: {props.beanBalance}</Text>
             <Text fontSize='xl'>Current bid: {currentBid}</Text>
             <FormControl>
                 <FormLabel>Beans to bid</FormLabel>

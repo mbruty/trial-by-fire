@@ -1,4 +1,4 @@
-import { Heading, Text, useForceUpdate, VStack } from '@chakra-ui/react';
+import { Heading, Text, useToast, VStack } from '@chakra-ui/react';
 import { getCookie } from 'cookies-next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
 import { GetServerSideProps } from 'next';
@@ -23,13 +23,23 @@ const PlayPage: FC<Props> = (props) => {
     const game = props.game;
     const socket = useSocket();
     const rtcConnection = useRtc();
+    const toast = useToast();
     const localStreamRef = useRef<HTMLVideoElement | null>(null);
-    const forceUpdate = useForceUpdate();
     const player = props.game.players.find(x => x._id === props.playerId);
     useOrangeBackground();
 
     useEffect(() => {
         if (!rtcConnection) return;
+        if (localStorage.getItem('isRemote') === 'true') {
+            toast({
+                title: 'Webcam video and audio',
+                description: 'We`re asking permissions to use your webcam and audio as you selected that you are a remote player. This video will be used for you to see the room, and for the room to see you! This video is not recorded.',
+                status: 'info',
+                duration: 10_000,
+                isClosable: true
+            })
+        }
+
         rtcConnection.start().then(() => {
             rtcConnection.joinCall(props.game._id.toString(), props.playerId);
         })
@@ -41,7 +51,7 @@ const PlayPage: FC<Props> = (props) => {
         return () => {
             socket.unsubscribeNewOffer(id);
         }
-    }, [rtcConnection, props.game._id, socket, props.playerId, forceUpdate]);
+    }, [rtcConnection, props.game._id, socket, props.playerId, toast]);
 
     let element: JSX.Element = <></>;
 

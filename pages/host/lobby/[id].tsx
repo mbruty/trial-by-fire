@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString, Types } from 'mongoose';
 import Game, { GameUser, IGame } from 'database/models/game';
-import { Button, Center, Heading, Text, VStack } from '@chakra-ui/react';
+import { Button, Center, Heading, Text, Tooltip, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
 import useSocket from 'hooks/useSocket';
 import mongoConnection from 'database/mongoConnection';
@@ -40,6 +40,9 @@ const GamePage: React.FC<Props> = (props: Props) => {
         socketContext.startGame(gameData.code);
     }
 
+    const tooltipText = gameData.players.length < 3 ?
+        'A minimum of 3 players are required to start the game' :
+        'Start the game once everyone is ready!'
     return (
         <VStack className={styles.main}>
             <Heading as='h1'>Waiting for players to join...</Heading>
@@ -50,7 +53,9 @@ const GamePage: React.FC<Props> = (props: Props) => {
                 ))}
             </div>
             <Center>
-                <Button id='start' onClick={start} colorScheme='teal'>Start Game</Button>
+                <Tooltip hasArrow title={tooltipText}>
+                    <Button disabled={gameData.players.length < 3} id='start' onClick={start} colorScheme='teal'>Start Game</Button>
+                </Tooltip>
             </Center>
         </VStack>
     )

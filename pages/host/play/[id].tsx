@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { isObjectIdOrHexString } from 'mongoose';
 import Game, { GameUser, IGame, Trial } from 'database/models/game';
-import { Heading, Text, useForceUpdate, VStack } from '@chakra-ui/react';
+import { Heading, Text, useToast, VStack } from '@chakra-ui/react';
 import styles from './[id].module.scss';
 import useSocket from 'hooks/useSocket';
 import mongoConnection from 'database/mongoConnection';
@@ -33,17 +33,26 @@ const GamePage: React.FC<Props> = (props: Props) => {
         currentRound: props.game.rounds[props.game.currentRound],
         roundState: stateFromString(props.game.state)
     });
-    const forceUpdate = useForceUpdate();
     const localStreamRef = useRef<HTMLVideoElement>(null);
 
     const socketContext = useSocket();
     const router = useRouter();
     const rtcConnection = useRtc();
+    const toast = useToast();
 
     // On mount, or when rtc connection changes, set it up
     useEffect(() => {
         // useRtc will return null on the first page load as cannot be setup server-side
         if (!rtcConnection) return;
+
+        toast({
+            title: 'Webcam video and audio required',
+            description: 'We\'re asking for permissions to use your webcam video and audio so that remote players can still join the fun! This video is not recorded.',
+            status: 'info',
+            duration: 10_000,
+            isClosable: true
+        });
+
         rtcConnection.start();
         socketContext.onceConnected(() => {
             rtcConnection.createOffer(socketContext.getGameId());
@@ -51,7 +60,6 @@ const GamePage: React.FC<Props> = (props: Props) => {
 
         const id = socketContext.subscribeToNewAnswer((candidate) => {
             rtcConnection.newCandidate(candidate);
-            forceUpdate();
         })
 
         const answerId = socketContext.subscribeAnswer((offer) => {
@@ -63,7 +71,7 @@ const GamePage: React.FC<Props> = (props: Props) => {
             socketContext.unsubscribeNewOffer(id);
             socketContext.unsubscribeAnswer(answerId);
         }
-    }, [rtcConnection, socketContext, props.id, forceUpdate]);
+    }, [rtcConnection, socketContext, props.id, toast]);
 
     // On mount, update all socket listeners to the game's current state
     // This ensures that everyone is in sync if the host's connection dropped & the page is refreshed

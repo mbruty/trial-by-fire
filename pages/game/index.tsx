@@ -2,7 +2,7 @@ import React, { FC, useState } from 'react';
 import styles from './index.module.scss'
 import { boolean, InferType, object, string, ValidationError } from 'yup';
 import { useRouter } from 'next/router';
-import { Button, Heading, Input, VStack } from '@chakra-ui/react';
+import { Button, Heading, Input, VStack, Tooltip, FormLabel } from '@chakra-ui/react';
 import axios, { AxiosResponse } from 'axios';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
@@ -106,9 +106,13 @@ const IndexPage: FC = () => {
                     <p>Are you in-person or remote?</p>
                     <form className={styles['radio-container']}>
                         <input checked={!data.isRemote} type='radio' data-testid='in-person' id='in-person' name='radio' onChange={() => update({ ...data, isRemote: false })} />
-                        <label className={styles['border-right']} htmlFor='in-person'>In person</label>
+                        <Tooltip label='In person players will have video chat' hasArrow borderRadius='md'>
+                        <FormLabel className={styles['border-right']} htmlFor='in-person'>In person</FormLabel>
+                        </Tooltip>
                         <input checked={data.isRemote} type='radio' data-testid='remote' id='remote' name='radio' onChange={() => update({ ...data, isRemote: true })} />
-                        <label className={styles['border-left']} htmlFor='remote'>Remote</label>
+                        <Tooltip label='Remote players will be connected via video chat' hasArrow borderRadius='md'>
+                            <FormLabel className={styles['border-left']} htmlFor='remote'>Remote</FormLabel>
+                        </Tooltip>
                         {errors.isRemote && <p className='error'>{errors.isRemote}</p>}
                     </form>
                     <Button colorScheme='whatsapp' onClick={onJoinClick}>Join</Button>
