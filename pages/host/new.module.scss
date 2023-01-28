@@ -1,13 +1,33 @@
 .main {
-    padding: 1rem;
+    background-color: var(--background-orange-dark);
+    width: 100vw;
+    min-height: 100vh;
+    gap: 0;
+    display: flex;
+    color: white;
+
+    .container {
+        background-color: var(--background-orange);
+        margin: 0 auto;
+        max-width: calc(650px + 4rem);
+        padding: 2rem;
+        -webkit-box-shadow: 0px 0px 16px 25px rgba(212, 117, 49, 1);
+        -moz-box-shadow: 0px 0px 16px 25px rgba(212, 117, 49, 1);
+        box-shadow: 0px 0px 16px 25px rgba(212, 117, 49, 1);
+
+        input::placeholder {
+            color: white;
+        }
+    }
 }
 
 .floatingLabel {
-    top: 0;
-    left: 0;
+    top: 12px;
+    left: 5px;
+    min-width: 140px;
     z-index: 2;
     position: absolute;
-    background-color: white;
+    background-color: var(--background-orange);
     pointer-events: none;
     margin: 2 3;
     padding: 0 2;

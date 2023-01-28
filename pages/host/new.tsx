@@ -37,8 +37,13 @@ const NewTrialPage: FC = () => {
     }
 
     function updateFormData(index: number, value: string, key: string) {
-        const copy = [...formData.trials] as unknown as Array<Record<string, string>>;
-        copy[index][key] = value;
+        const copy = [...formData.trials] as unknown as Array<Record<string, string | number>>;
+
+        if (key === 'timeLimit') {
+            copy[index][key] = parseInt(value);
+        } else {
+            copy[index][key] = value;
+        }
         setFormData({ ...formData, trials: copy as unknown as Array<Trial> })
     }
 
@@ -75,12 +80,12 @@ const NewTrialPage: FC = () => {
     }
 
     return (
-        <Center style={{ width: '100vw' }}>
-            <div style={{ maxWidth: '1000px' }}>
+        <div className={styles.main}>
+            <div className={styles.container}>
                 <Head>
                     <title>Trial By Fire - New Trial</title>
                 </Head>
-                <Stack className={styles.main} spacing='1rem'>
+                <Stack spacing='1rem'>
                     <Heading as='h1'>Create a trial</Heading>
                     <Box maxW='container.lg' borderWidth='0' borderRadius='lg'>
                         <HStack>
@@ -93,8 +98,8 @@ const NewTrialPage: FC = () => {
                             >
                                 <NumberInputField />
                                 <NumberInputStepper>
-                                    <NumberIncrementStepper />
-                                    <NumberDecrementStepper />
+                                    <NumberIncrementStepper color='white' />
+                                    <NumberDecrementStepper color='white' />
                                 </NumberInputStepper>
                             </NumberInput>
                         </HStack>
@@ -116,12 +121,30 @@ const NewTrialPage: FC = () => {
                                 style={{ marginBottom: index === formData.trials.length - 1 ? 0 : '1rem' }}
                             >
                                 <HStack>
-                                    <Input id={`title-${index}`} value={value.title} onChange={(e) => updateFormData(index, e.target.value, 'title')} placeholder='Trial title' size='md' />
-                                    <label htmlFor={`select-${index}`} style={{ display: 'none' }}>Select trial type for {index}</label>
-                                    <Select id={`select-${index}`}  value={value.type} onChange={(e) => updateFormData(index, e.target.value, 'type')} icon={<ChevronDownIcon />} placeholder='Trial type'>
-                                        <option>Time trial</option>
-                                        <option>Fastest</option>
-                                    </Select>
+                                    <Input id={`title-${index}`} style={{ width: '350px' }} value={value.title} onChange={(e) => updateFormData(index, e.target.value, 'title')} placeholder='Trial title' size='md' />
+                                    <div style={{ position: 'relative' }}>
+                                        <FormLabel htmlFor={`select-${index}`} className={styles.floatingLabel}>Select trial type</FormLabel>
+                                        <Select style={{ minWidth: '15ch' }} id={`select-${index}`} value={value.type} onChange={(e) => updateFormData(index, e.target.value, 'type')} icon={<ChevronDownIcon />} >
+                                            <option>Time trial</option>
+                                            <option>Fastest</option>
+                                        </Select>
+                                    </div>
+                                    {value.type === 'Time trial' && (
+                                        <NumberInput
+                                            id={`time-limit-${index}`}
+                                            value={value.timeLimit}
+                                            onChange={(e) => updateFormData(index, e, 'timeLimit')}
+                                            precision={1}
+                                            step={0.1}
+                                        >
+                                            <NumberInputField style={{ minWidth: '130px' }} />
+                                            <FormLabel htmlFor='time-limit' className={styles.floatingLabel}>Time limit (mins)</FormLabel>
+                                            <NumberInputStepper>
+                                                <NumberIncrementStepper />
+                                                <NumberDecrementStepper />
+                                            </NumberInputStepper>
+                                        </NumberInput>
+                                    )}
                                     <Button onClick={() => deleteTrial(index)} style={{ padding: '0 25px' }} leftIcon={<DeleteIcon />} colorScheme='red' variant='solid'>
                                         Delete
                                     </Button>
@@ -132,21 +155,24 @@ const NewTrialPage: FC = () => {
                     </Reorder>
                     <Box maxW='container.lg' borderWidth='0' borderRadius='lg'>
                         <HStack>
-                            <Input value={addData.title} onChange={(e) => setAddData({ ...addData, title: e.target.value })} placeholder='Trial title' size='md' />
-                            <FormLabel htmlFor='select' style={{ display: 'none' }}>Select trial type</FormLabel>
-                            <Select id='select' value={addData.type} onChange={(e) => setAddData({ ...addData, type: e.target.value })} icon={<ChevronDownIcon />} placeholder='Trial type'>
-                                <option>Time trial</option>
-                                <option>Fastest</option>
-                            </Select>
+                            <Input value={addData.title} style={{ width: '350px' }} onChange={(e) => setAddData({ ...addData, title: e.target.value })} placeholder='Trial title' size='md' />
+                            <div style={{ position: 'relative' }}>
+                                <FormLabel htmlFor='select' className={styles.floatingLabel}>Select trial type</FormLabel>
+                                <Select style={{ minWidth: '15ch' }} id='select' value={addData.type} onChange={(e) => setAddData({ ...addData, type: e.target.value })} icon={<ChevronDownIcon />} >
+                                    <option>Time trial</option>
+                                    <option>Fastest</option>
+                                </Select>
+                            </div>
                             {addData.type === 'Time trial' && (
                                 <NumberInput
+                                    id='time-limit'
                                     value={addData.timeLimit}
                                     onChange={(e) => setAddData({ ...addData, timeLimit: +e })}
                                     precision={1}
                                     step={0.1}
                                 >
-                                    <NumberInputField />
-                                    <FormLabel className={styles.floatingLabel}>Time limit (mins)</FormLabel>
+                                    <NumberInputField style={{ minWidth: '130px' }} />
+                                    <FormLabel htmlFor='time-limit' className={styles.floatingLabel}>Time limit (mins)</FormLabel>
                                     <NumberInputStepper>
                                         <NumberIncrementStepper />
                                         <NumberDecrementStepper />
@@ -164,7 +190,7 @@ const NewTrialPage: FC = () => {
                     </Center>
                 </Stack>
             </div>
-        </Center>
+        </div>
     )
 }
 

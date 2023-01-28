@@ -1,4 +1,4 @@
-import { Button, FormControl, FormLabel, Heading, HStack, Input, Text, VStack } from '@chakra-ui/react';
+import { Button, FormControl, FormLabel, Heading, HStack, Input, Text, useToast, VStack } from '@chakra-ui/react';
 import axios from 'axios';
 import PlayerImage from 'components/host/PlayerImage';
 import { GameUser } from 'database/models/game';
@@ -16,6 +16,7 @@ const RoundPlay: FC<Props> = (props) => {
     const [amount, setAmount] = useState<number | undefined>();
     const [selectedPlayer, setSelectedPlayer] = useState<number | undefined>();
     const [error, setError] = useState<string | undefined>();
+    const toast = useToast();
 
     useEffect(() => {
         axios.get(`/api/game/${props.gameId}/bets`)
@@ -24,7 +25,7 @@ const RoundPlay: FC<Props> = (props) => {
             })
     }, [props.gameId]);
 
-    async function onSubmit() {
+    function onSubmit() {
         if (!amount || amount < 1) {
             setError('Please enter a valid amount');
             return
@@ -41,12 +42,28 @@ const RoundPlay: FC<Props> = (props) => {
             setError(undefined);
         }
 
-        await axios.post(`/api/game/${props.gameId}/bets`, {
+        axios.post(`/api/game/${props.gameId}/bets`, {
             playerId: props.playerId,
             gameId: props.gameId,
             amount,
             selectedPlayer: players[selectedPlayer]._id
-        });
+        }).catch(() => {
+            toast({
+                title: 'Bet error',
+                description: 'There was an error submitting your bet, please try again',
+                duration: 3000,
+                isClosable: true,
+                status: 'error'
+            });
+        }).then(() => {
+            toast({
+                title: 'Bet processed',
+                description: 'Your bet was processed and accepted.',
+                duration: 3000,
+                isClosable: true,
+                status: 'success'
+            });
+        })
     }
 
     if (!players) {

@@ -21,6 +21,7 @@ type Props = {
 
 const SetupPage: FC<Props> = ({ game, ID }) => {
     const [imageSaved, setImageSaved] = React.useState(false);
+    const [loading, setIsLoading] = React.useState(false);
     const [shouldNavigateToPlayAfterSave, setShouldNavigateToPlayAfterSave] = React.useState(game.state !== 'waiting');
     const router = useRouter();
     const socket = useSocket();
@@ -65,11 +66,11 @@ const SetupPage: FC<Props> = ({ game, ID }) => {
             imageBase64: data
         };
 
-        const res = await axios.post('/api/image/upload', body);
+        setIsLoading(true);
+        await axios.post('/api/image/upload', body).catch(() => setIsLoading(false));
 
-        if (res.status == 200) {
-            setImageSaved(true);
-        }
+        setImageSaved(true);
+        setIsLoading(false);
 
         if (shouldNavigateToPlayAfterSave) {
             router.push(`/game/play/${game._id}`);
@@ -91,7 +92,7 @@ const SetupPage: FC<Props> = ({ game, ID }) => {
                 <VStack className={styles.container} spacing='1rem'>
                     <Heading as='h1'>Hello {player?.name ?? ''}</Heading>
                     <p>Lets get you setup</p>
-                    <Camera imgSrc={imgSrc} onSubmit={uploadToServer} onReset={onReset} isSaved={imageSaved} />
+                    <Camera isLoading={loading} imgSrc={imgSrc} onSubmit={uploadToServer} onReset={onReset} isSaved={imageSaved} />
                     <p>Waiting on the host to start the game...</p>
                 </VStack>
             </div></>

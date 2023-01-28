@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Webcam from 'react-webcam'
-import { Button, HStack } from '@chakra-ui/react'
+import { Button, HStack, Spinner } from '@chakra-ui/react'
 
 type VideoConstraints = {
     width: number;
@@ -13,6 +13,7 @@ type CameraProps = {
     onSubmit: (data: string) => void;
     onReset: () => void;
     isSaved: boolean;
+    isLoading: boolean;
 }
 
 const Camera: React.FC<CameraProps> = (props) => {
@@ -81,6 +82,7 @@ const Camera: React.FC<CameraProps> = (props) => {
                             Retake
                         </Button>
                         <Button
+                            isDisabled={props.isLoading}
                             id='save'
                             colorScheme='whatsapp'
                             disabled={props.isSaved}
@@ -89,6 +91,7 @@ const Camera: React.FC<CameraProps> = (props) => {
                                 props.onSubmit(picture)
                             }}
                         >
+                            {props.isLoading && (<Spinner style={{ marginRight: '1rem' }} />)}
                             Save
                         </Button>
                     </HStack>

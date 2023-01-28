@@ -66,7 +66,7 @@ export class WebRtcConnection {
 
     public async start() {
         if (this.isInitalised) return;
-
+        if (localStorage.getItem('isRemote') === 'false') return;
         this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         this.remoteStream = new MediaStream();
 
@@ -134,6 +134,8 @@ export class WebRtcConnection {
     }
 
     public async joinCall(roomId: string, playerId: string) {
+        if (localStorage.getItem('isRemote') === 'false') return;
+
         this.roomId = roomId;
         this.isHost = false;
 
