@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import Game from 'database/models/game';
-
+import connectDb from 'database/mongoConnection';
 export async function getGames() {
 
 
@@ -20,6 +20,7 @@ async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+    await connectDb();
     if (req.method === 'GET') {
         try {
             const response = await getGames();
